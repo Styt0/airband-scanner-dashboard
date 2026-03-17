@@ -1,0 +1,9 @@
+﻿services:
+  geosentinel:
+    build: .
+    container_name: geosentinel-dashboard
+    ports:
+      - "3090:3090"
+    env_file:
+      - .env
+    restart: always
