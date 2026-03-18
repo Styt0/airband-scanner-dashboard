@@ -1,5 +1,7 @@
 # astro-command-dashboard
 
+> **Thema:** Situational Awareness — combineert OSINT + SDR/ADS-B feeds in één dashboard
+
 "TangoSierra.One" — Mission control & situational awareness dashboard (Antwerpen/Vlaanderen). NASA-stijl dark theme.
 
 **Repo:** `C:\Users\Tom\OneDrive\Documents\GitHub\astro-command-dashboard`

@@ -10,40 +10,79 @@ Centrale locatie voor alle Claude Code projectcontexten. Elke map = één projec
 projects/
 ├── README.md
 │
-│── ZimaOS & NAS services
-├── zimaOS/                    # ZimaOS homeserver (192.168.0.237) — hoofdproject
-├── geosentinel/               # Geospatiale threat monitoring (Python/Docker)
-├── terrorism_database/        # Kennisdatabank dreigingsanalyse België
-├── osint_researcher/          # OSINT pipeline (Open WebUI + Tor)
-├── ai_workstation/            # Open WebUI / Ollama / Whisper
-├── map_server/                # OSM Tile Server België
-├── servarr_stack/             # Media automation (Radarr/Sonarr/etc.)
-├── network_security/          # AdGuard Home / Tailscale
-├── offline_services/          # Kiwix / RetroArch
-├── plex_media/                # Plex / Overseerr / Downtify
-├── mobile_adsb/               # Mobiele ADS-B / Airband monitoring
+│── Thematische Hubs (geconsolideerd)
+├── sdr-sigint/                    # SDR/SIGINT Hub — 8 sub-projecten
+│   ├── CLAUDE.md                  # Hub overzicht + architectuur
+│   ├── airband-scanner/           # RPi airband scanner + ADS-B + STT
+│   ├── airband_scanner/           # RPi airband specs (handover doc)
+│   ├── airwave-aggregator/        # Frequentie aggregator (React + Mapbox)
+│   ├── ham_scanner/               # Ham radio scanner (ZimaBoard)
+│   ├── mobile_adsb/               # Mobiele ADS-B + airband
+│   ├── sdr-explorer-hub/          # SDR educatief platform
+│   ├── sdr-signal-scanner/        # SDR signaalscanner UI
+│   └── tuning-maple/              # Frequentie referentie + ISS tracker
 │
-│── GitHub repos  (code in OneDrive\Documents\GitHub\<naam>)
-├── airband-scanner/           # RPi airband scanner + ADS-B + speech-to-text
-├── airwave-aggregator/        # Frequentie aggregator (React + Mapbox)
-├── astro-command-dashboard/   # Mission control dashboard (React)
-├── breadbot-locator/          # Broodautomaat locator (React + Leaflet)
-├── broodautomaat-ervaring/    # Broodautomaat platform (React + Mapbox)
-├── bushcraft-weekend-planner/ # Bushcraft evenementen (React)
-├── maghreb-watchtower/        # Maghreb nieuwsmonitoring (React)
-├── osint-hub-collective/      # OSINT hub (React)
-├── sdr-signal-scanner/        # SDR signaalscanner UI (React)
-└── tuning-maple/              # Radio frequentie referentie (React)
+├── geo-platform/                  # Geo Platform Hub — 2 sub-projecten
+│   ├── CLAUDE.md                  # Hub overzicht
+│   ├── map_server/                # OSM Tile Server België/BeNeLux
+│   └── geosentinel/               # Geospatiale threat monitoring
+│
+├── broodautomaat/                 # Broodautomaat Hub — 2 sub-projecten
+│   ├── CLAUDE.md                  # Hub overzicht
+│   ├── breadbot-locator/          # BroodBot (Leaflet + Capacitor)
+│   └── broodautomaat-ervaring/    # BroodSpot (Mapbox + profielen)
+│
+│── ZimaOS & NAS Services
+├── zimaOS/                        # ZimaOS homeserver (192.168.0.237) — hoofdproject
+├── ai_workstation/                # Open WebUI / Ollama / Whisper
+├── servarr_stack/                 # Media automation (Radarr/Sonarr/etc.)
+├── network_security/              # AdGuard Home / Tailscale
+├── offline_services/              # Kiwix / RetroArch
+├── plex_media/                    # Plex / Overseerr / Downtify
+│
+│── Intelligence & OSINT
+├── terrorism_database/            # Kennisdatabank dreigingsanalyse België
+├── osint_researcher/              # OSINT pipeline (Open WebUI + Tor)
+├── maghreb-watchtower/            # Maghreb monitoring (React) — thema: intelligence
+├── osint-hub-collective/          # OSINT research hub (React) — thema: OSINT
+│
+│── Situational Awareness
+├── astro-command-dashboard/       # TangoSierra.One dashboard (React)
+│
+│── Standalone
+└── bushcraft-weekend-planner/     # Bushcraft evenementen (React)
 ```
 
 > **GitHub repos:** Hub-entry hier bevat alleen context + link. CLAUDE.md voor coding staat IN de repo zelf: `OneDrive\Documents\GitHub\<naam>\CLAUDE.md`
+
+## Thema Toewijzing
+
+| Thema | Projecten | Status |
+|-------|-----------|--------|
+| **SDR/SIGINT** | airband-scanner, airband_scanner, airwave-aggregator, ham_scanner, mobile_adsb, sdr-explorer-hub, sdr-signal-scanner, tuning-maple | Geconsolideerd in `sdr-sigint/` |
+| **Geo Platform** | map_server, geosentinel | Geconsolideerd in `geo-platform/` |
+| **Broodautomaat** | breadbot-locator, broodautomaat-ervaring | Geconsolideerd in `broodautomaat/` |
+| **Intelligence** | terrorism_database, maghreb-watchtower | Apart (user keuze) |
+| **OSINT** | osint_researcher, osint-hub-collective | Apart (user keuze) |
+| **Sit. Awareness** | astro-command-dashboard | Cross-thema dashboard |
+| **NAS Services** | zimaOS, ai_workstation, servarr_stack, network_security, offline_services, plex_media | ZimaOS infra |
+| **Standalone** | bushcraft-weekend-planner | Geen overlap |
 
 ## Workflow — Zo werkt het
 
 ### Starten met een project
 ```bash
-cd "C:\Users\Tom\OneDrive\Claude\projects\<project>"
-claude  # Claude leest automatisch CLAUDE.md
+# Hub-project (bv. SDR hub overzicht)
+cd "C:\Users\Tom\OneDrive\Claude\projects\sdr-sigint"
+claude
+
+# Sub-project binnen hub
+cd "C:\Users\Tom\OneDrive\Claude\projects\sdr-sigint\airwave-aggregator"
+claude
+
+# Standalone project
+cd "C:\Users\Tom\OneDrive\Claude\projects\terrorism_database"
+claude
 ```
 
 ### Na een werksessie — wijzigingen opslaan

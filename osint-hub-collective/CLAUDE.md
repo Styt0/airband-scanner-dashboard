@@ -1,5 +1,7 @@
 # osint-hub-collective
 
+> **Thema:** OSINT — frontend voor `osint_researcher/` pipeline
+
 OSINT research hub — tools, bronnen en analyse workflows voor open source intelligence.
 
 **Repo:** `C:\Users\Tom\OneDrive\Documents\GitHub\osint-hub-collective`

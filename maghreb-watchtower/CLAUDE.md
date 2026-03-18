@@ -1,5 +1,7 @@
 # maghreb-watchtower
 
+> **Thema:** Intelligence / Terrorism — verwant aan `terrorism_database/` en `osint_researcher/`
+
 Journalistiek onderzoekstool voor monitoring van radicalisering, extremisme en terrorisme in de Maghreb-regio. Gecureerde bronnenlijsten + RSS overzicht.
 
 **Repo:** `C:\Users\Tom\OneDrive\Documents\GitHub\maghreb-watchtower`
