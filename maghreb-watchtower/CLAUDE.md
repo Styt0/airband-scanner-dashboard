@@ -1,0 +1,18 @@
+# maghreb-watchtower
+
+Journalistiek onderzoekstool voor monitoring van radicalisering, extremisme en terrorisme in de Maghreb-regio. Gecureerde bronnenlijsten + RSS overzicht.
+
+**Repo:** `C:\Users\Tom\OneDrive\Documents\GitHub\maghreb-watchtower`
+
+## Stack
+React 18 · TypeScript · Vite · shadcn/ui · Tailwind CSS · React Router
+
+## Werken aan dit project
+```bash
+cd "C:\Users\Tom\OneDrive\Documents\GitHub\maghreb-watchtower"
+npm run dev
+```
+
+## Gerelateerde projecten
+- [[terrorism_database/CLAUDE|terrorism_database]] — Belgische dreigingsdatabank
+- [[osint_researcher/CLAUDE|osint_researcher]] — OSINT pipeline als bronverzamelaar

@@ -8,18 +8,35 @@ Centrale locatie voor alle Claude Code projectcontexten. Elke map = één projec
 
 ```
 projects/
-├── zimaOS/              # ZimaOS homeserver (192.168.0.237) — hoofdproject
-├── geosentinel/         # Geospatiale threat monitoring
-├── terrorism_database/  # Kennisdatabank dreigingsanalyse
-├── osint_researcher/    # OSINT pipeline (Open WebUI + Tor)
-├── ai_workstation/      # Open WebUI / Ollama / Whisper
-├── map_server/          # OSM Tile Server België
-├── servarr_stack/       # Media automation (Radarr/Sonarr/etc.)
-├── network_security/    # AdGuard Home / Tailscale
-├── offline_services/    # Kiwix / RetroArch
-├── plex_media/          # Plex / Overseerr / Downtify
-└── mobile_adsb/         # Mobiele ADS-B / Airband monitoring
+├── README.md
+│
+│── ZimaOS & NAS services
+├── zimaOS/                    # ZimaOS homeserver (192.168.0.237) — hoofdproject
+├── geosentinel/               # Geospatiale threat monitoring (Python/Docker)
+├── terrorism_database/        # Kennisdatabank dreigingsanalyse België
+├── osint_researcher/          # OSINT pipeline (Open WebUI + Tor)
+├── ai_workstation/            # Open WebUI / Ollama / Whisper
+├── map_server/                # OSM Tile Server België
+├── servarr_stack/             # Media automation (Radarr/Sonarr/etc.)
+├── network_security/          # AdGuard Home / Tailscale
+├── offline_services/          # Kiwix / RetroArch
+├── plex_media/                # Plex / Overseerr / Downtify
+├── mobile_adsb/               # Mobiele ADS-B / Airband monitoring
+│
+│── GitHub repos  (code in OneDrive\Documents\GitHub\<naam>)
+├── airband-scanner/           # RPi airband scanner + ADS-B + speech-to-text
+├── airwave-aggregator/        # Frequentie aggregator (React + Mapbox)
+├── astro-command-dashboard/   # Mission control dashboard (React)
+├── breadbot-locator/          # Broodautomaat locator (React + Leaflet)
+├── broodautomaat-ervaring/    # Broodautomaat platform (React + Mapbox)
+├── bushcraft-weekend-planner/ # Bushcraft evenementen (React)
+├── maghreb-watchtower/        # Maghreb nieuwsmonitoring (React)
+├── osint-hub-collective/      # OSINT hub (React)
+├── sdr-signal-scanner/        # SDR signaalscanner UI (React)
+└── tuning-maple/              # Radio frequentie referentie (React)
 ```
+
+> **GitHub repos:** Hub-entry hier bevat alleen context + link. CLAUDE.md voor coding staat IN de repo zelf: `OneDrive\Documents\GitHub\<naam>\CLAUDE.md`
 
 ## Workflow — Zo werkt het
 
