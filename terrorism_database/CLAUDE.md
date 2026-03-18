@@ -58,3 +58,9 @@ terrorisme_feeds.opml       # Verouderd
 - Vonnis weduwe Feisal Yamoun (Faiza H.)
 - Namen leiders/leden Way of Life
 - Exacte datum Krugergroep home invasion
+
+## Gerelateerde projecten
+- [[zimaOS/CLAUDE|zimaOS]] — server waarop MkDocs wiki draait (poort 3070)
+- [[osint_researcher/CLAUDE|osint_researcher]] — OSINT pipeline als primaire input
+- [[geosentinel/CLAUDE|geosentinel]] — geospatiale dreigingsmonitoring als input
+- [[ai_workstation/CLAUDE|ai_workstation]] — AI-analyse voor kennisverwerking

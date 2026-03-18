@@ -23,6 +23,9 @@ MOBILE_ADSB_AIRBAND_SPEC.md   # Volledige specificatie
 - SDR++ of GQRX voor airband monitoring
 - TAK server integratie voor positierapportage
 
-## Gerelateerde Projecten
-- GeoSentinel (geospatiale monitoring): zie `../geosentinel/CLAUDE.md`
-- OSINT Researcher: zie `../osint_researcher/CLAUDE.md`
+## Gerelateerde projecten
+- [[geosentinel/CLAUDE|geosentinel]] — ADS-B als geospatiale OSINT feed
+- [[osint_researcher/CLAUDE|osint_researcher]] — vluchtdata als OSINT bron
+- [[airband_scanner/AIRBAND_PROJECT|airband_scanner]] — RPi airband setup met ADS-B component
+- [[ham_scanner/HAM_SCANNER_PLAN|ham_scanner]] — APRS vervangt ADS-B in ham stack
+- [[airwave-aggregator/CLAUDE|airwave-aggregator]] — frontend voor frequentie/tracking data

@@ -247,3 +247,8 @@ GET /audio/<id>    → WAV audio for transmission id (CU8→WAV on-the-fly)
 GET /map/<id>      → SVG radar map with aircraft positions at transmission time
 GET /favicon.ico   → 204 No Content
 ```
+
+## Gerelateerde projecten
+- [[airwave-aggregator/CLAUDE|airwave-aggregator]] — React frontend voor frequentiedata van deze scanner
+- [[ham_scanner/HAM_SCANNER_PLAN|ham_scanner]] — zelfde stack, geconfigureerd voor ham frequenties op Zima Board
+- [[mobile_adsb/CLAUDE|mobile_adsb]] — mobiele ADS-B variant met overlappende hardware

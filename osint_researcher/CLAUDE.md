@@ -35,3 +35,9 @@ Model: gemini-1.5-pro (of gemini-2.0-flash)
 - Architecture klaar
 - Tool beschikbaar
 - Needs: "Tool" integratie in Open WebUI voor automatische scraping pipeline
+
+## Gerelateerde projecten
+- [[zimaOS/CLAUDE|zimaOS]] — server waarop dit draait
+- [[ai_workstation/CLAUDE|ai_workstation]] — levert AI-modellen voor analyse
+- [[geosentinel/CLAUDE|geosentinel]] — overlappende geo-monitoring functionaliteit
+- [[terrorism_database/CLAUDE|terrorism_database]] — OSINT output voedt kennisdatabank

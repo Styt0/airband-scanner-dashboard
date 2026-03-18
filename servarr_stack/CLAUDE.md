@@ -50,3 +50,7 @@ Geautomatiseerde media pipeline voor films, series, muziek en e-books.
 ## Prowlarr Tips
 - Indexer sync: `POST /api/v1/command` met `{"name":"ApplicationIndexerSync"}`
 - Readarr app ID in Prowlarr: 4
+
+## Gerelateerde projecten
+- [[zimaOS/CLAUDE|zimaOS]] — server waarop dit draait
+- [[plex_media/CLAUDE|plex_media]] — ontvangt gedownloade content van deze stack

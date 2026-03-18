@@ -290,3 +290,14 @@ crontab -e          # aanpassen
 
 ### Rename commando's
 
+
+## Gerelateerde projecten
+- [[ai_workstation/CLAUDE|ai_workstation]] — lokale AI-modellen (OpenWebUI, Ollama) op deze server
+- [[geosentinel/CLAUDE|geosentinel]] — geospatiale threat-monitoring, draait op deze server
+- [[map_server/CLAUDE|map_server]] — offline OSM tile server, draait op deze server
+- [[network_security/CLAUDE|network_security]] — AdGuard DNS + Tailscale, draait op deze server
+- [[offline_services/CLAUDE|offline_services]] — Kiwix + RetroArch, draait op deze server
+- [[osint_researcher/CLAUDE|osint_researcher]] — OSINT pipeline, draait op deze server
+- [[plex_media/CLAUDE|plex_media]] — Plex media server, draait op deze server
+- [[servarr_stack/CLAUDE|servarr_stack]] — media automation stack, draait op deze server
+- [[terrorism_database/CLAUDE|terrorism_database]] — MkDocs kennisdatabank, draait op deze server

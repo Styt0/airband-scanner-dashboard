@@ -67,3 +67,9 @@ import { Map } from 'lucide-react'
 - `src/components/ui/` niet aanpassen
 - Geen nieuwe packages zonder te vragen
 - Geen class components
+
+## Gerelateerde projecten
+- [[airband_scanner/AIRBAND_PROJECT|airband_scanner]] — RPi backend scanner waarvan dit de frontend is
+- [[map_server/CLAUDE|map_server]] — offline kaartdata voor Mapbox fallback
+- [[mobile_adsb/CLAUDE|mobile_adsb]] — verwante frequentie/ADS-B tracking stack
+- [[ham_scanner/HAM_SCANNER_PLAN|ham_scanner]] — verwante SDR scanner (ham frequenties)

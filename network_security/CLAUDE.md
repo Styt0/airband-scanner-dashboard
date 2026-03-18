@@ -26,3 +26,7 @@ ssh zimaos 'cd /DATA/.casaos/apps/adguard-home && docker compose restart'
 ## Open Taken
 - [ ] AdGuard: controleer blocklist statistieken (Dashboard)
 - [ ] Tailscale: verificeer server is "Online" in admin console
+
+## Gerelateerde projecten
+- [[zimaOS/CLAUDE|zimaOS]] — server waarop dit draait
+- Biedt netwerk-fundament (AdGuard DNS + Tailscale) voor alle andere projecten

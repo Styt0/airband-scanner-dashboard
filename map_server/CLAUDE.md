@@ -49,3 +49,9 @@ ssh zimaos 'docker exec openstreetmap-tile-server osmium ...'
 - [ ] CPU resource limit instellen op container
 - [ ] NL toevoegen na België import
 - [ ] LU toevoegen na NL
+
+## Gerelateerde projecten
+- [[zimaOS/CLAUDE|zimaOS]] — server waarop dit draait
+- [[geosentinel/CLAUDE|geosentinel]] — gebruikt kaartdata voor geo-visualisatie
+- [[airwave-aggregator/CLAUDE|airwave-aggregator]] — gebruikt kaartdata voor de frequentiekaart
+- [[mobile_adsb/CLAUDE|mobile_adsb]] — gebruikt kaartdata voor ADS-B tracking

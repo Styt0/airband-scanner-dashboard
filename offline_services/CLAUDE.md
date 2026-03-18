@@ -28,3 +28,7 @@ ssh zimaos 'cd /DATA/.casaos/apps/big-bear-kiwix-serve && docker compose restart
 ## Open Taken
 - [ ] Kiwix update log controleren op succesvolle maandelijkse downloads
 - [ ] RetroArch: test of games laden zonder lag
+
+## Gerelateerde projecten
+- [[zimaOS/CLAUDE|zimaOS]] — server waarop dit draait
+- [[plex_media/CLAUDE|plex_media]] — aanvullende offline media content

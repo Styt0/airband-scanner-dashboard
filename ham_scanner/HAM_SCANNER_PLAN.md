@@ -468,3 +468,8 @@ HAM_FREQS = {
 Reet, Belgium: **JO21EB**
 - Grid square center: 51.10°N, 4.39°E
 - Useful for: APRS position reference, VHF/UHF contest scoring, DX reporting
+
+## Gerelateerde projecten
+- [[airband_scanner/AIRBAND_PROJECT|airband_scanner]] — zelfde stack, airband op RPi nabij EBAW
+- [[mobile_adsb/CLAUDE|mobile_adsb]] — APRS vervangt ADS-B tracker in deze setup
+- [[airwave-aggregator/CLAUDE|airwave-aggregator]] — React frontend concept voor frequentiedata

@@ -42,3 +42,8 @@ ssh zimaos 'docker ps | grep plex'
 - [ ] PLEX WD drive libraries toevoegen in Plex UI (/plex-tv, /plex-movies, etc.)
 - [ ] Overseerr sync verificeren (requests → Radarr/Sonarr)
 - [ ] Remote access checken buiten lokaal netwerk
+
+## Gerelateerde projecten
+- [[zimaOS/CLAUDE|zimaOS]] — server waarop dit draait
+- [[servarr_stack/CLAUDE|servarr_stack]] — levert automatisch media content aan Plex
+- [[offline_services/CLAUDE|offline_services]] — aanvullende offline content (Kiwix)

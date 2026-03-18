@@ -34,3 +34,8 @@ ssh zimaos 'docker exec ollama ollama list'
 - [ ] Open WebUI updaten naar nieuwste versie (Ollama tag)
 - [ ] Gemini connectivity testen in Open WebUI
 - [ ] CPU/RAM gebruik monitoren bij lokale modellen
+
+## Gerelateerde projecten
+- [[zimaOS/CLAUDE|zimaOS]] — server waarop dit draait
+- [[osint_researcher/CLAUDE|osint_researcher]] — gebruikt AI-modellen voor OSINT analyse
+- [[terrorism_database/CLAUDE|terrorism_database]] — gebruikt AI-modellen voor kennisverwerking

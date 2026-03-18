@@ -37,3 +37,10 @@ ssh zimaos 'docker logs geosentinel --tail 50'
 - Architecture klaar
 - Tor proxy integratie aanwezig
 - Needs: deployment op NAS en live testing
+
+## Gerelateerde projecten
+- [[zimaOS/CLAUDE|zimaOS]] — server waarop dit draait
+- [[osint_researcher/CLAUDE|osint_researcher]] — overlappende OSINT feeds en Tor proxy
+- [[map_server/CLAUDE|map_server]] — levert offline kaartdata voor geo-visualisatie
+- [[mobile_adsb/CLAUDE|mobile_adsb]] — ADS-B data als geospatiale OSINT feed
+- [[terrorism_database/CLAUDE|terrorism_database]] — dreigingsdata als input voor monitoring
