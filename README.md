@@ -50,7 +50,10 @@ projects/
 ├── astro-command-dashboard/       # TangoSierra.One dashboard (React)
 │
 │── Standalone
-└── bushcraft-weekend-planner/     # Bushcraft evenementen (React)
+├── bushcraft-weekend-planner/     # Bushcraft evenementen (React)
+│
+│── Persoonlijk Kennisbeheer
+└── my-brain-vault/                # Obsidian vault + 10 AI-subagenten (My Brain Is Full)
 ```
 
 > **GitHub repos:** Hub-entry hier bevat alleen context + link. CLAUDE.md voor coding staat IN de repo zelf: `OneDrive\Documents\GitHub\<naam>\CLAUDE.md`
@@ -67,6 +70,30 @@ projects/
 | **Sit. Awareness** | astro-command-dashboard | Cross-thema dashboard |
 | **NAS Services** | zimaOS, ai_workstation, servarr_stack, network_security, offline_services, plex_media | ZimaOS infra |
 | **Standalone** | bushcraft-weekend-planner | Geen overlap |
+| **Persoonlijk KB** | my-brain-vault | Obsidian vault + agent crew |
+
+## My Brain Is Full — Agent Crew
+
+10 subagenten die de Obsidian vault beheren via natuurlijke taal. Gedefinieerd in `.claude/agents/` van de vault, auto-geladen door Claude Code.
+
+| # | Agent | Functie | Tools |
+|---|-------|---------|-------|
+| 1 | **wellness-guide** | Emotioneel welzijn, mindfulness, stress, angst, burnout, slaap | Read (vault, read-only) |
+| 2 | **food-coach** | Voeding, dieet, boodschappenlijst, maaltijdideeën, calorieën | Read, Write, Edit |
+| 3 | **postman** | Gmail lezen/verwerken, Google Calendar events aanmaken/raadplegen, deadlines opslaan | Gmail MCP, GCal MCP, Read, Write, Edit |
+| 4 | **transcriber** | Audio/opnames/podcasts/lectures/vergaderingen → gestructureerde notities | Read, Write, Glob, Grep |
+| 5 | **scribe** | Ruwe tekst, ideeën, brainstorms, voice-to-text, to-dos → gepolijste notities | Read, Write, Edit |
+| 6 | **seeker** | Zoeken in vault, vragen over notities, "waar heb ik X gezet", tijdlijnen vergelijken | Read, Glob, Grep |
+| 7 | **architect** | Vaultstructuur aanmaken/aanpassen, templates, MOCs, tag-taxonomie, defrag, onboarding | Read, Write, Edit, Bash, Glob, Grep |
+| 8 | **sorter** | Inbox triage, notities sorteren naar juiste map, batch sort | Read, Write, Edit, Glob, Grep, Bash |
+| 9 | **connector** | Links tussen notities vinden/aanmaken, kennisgraaf versterken, bridge notes | Read, Edit, Glob, Grep |
+| 10 | **librarian** | Onderhoud, duplicaten detecteren/samenvoegen, broken links fixen, vault health | Read, Write, Edit, Bash, Glob, Grep |
+
+**Routering:** CLAUDE.md in vault root bevat prioriteitsregels (wellness eerst, dan food, dan postman, enz.)
+**Taal:** Agents antwoorden automatisch in de taal van de gebruiker.
+**Vault:** `C:\Users\Tom\OneDrive\Claude\MyBrainVault\` (Windows) | `/DATA/vault/` (ZimaOS)
+
+---
 
 ## Workflow — Zo werkt het
 
