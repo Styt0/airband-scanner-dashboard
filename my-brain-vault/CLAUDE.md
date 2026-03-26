@@ -1,4 +1,4 @@
-# My Brain Is Full — Vault Claude Code Context
+﻿# My Brain Is Full — Vault Claude Code Context
 
 ## Project Doel
 Obsidian kennisbank beheerd door een crew van 10 AI-subagenten via Claude Code. De agents handelen vault-operaties af via natuurlijke taal: notities opslaan, sorteren, zoeken, verbinden, onderhoud, e-mail/kalender, transcriptie, voeding en emotioneel welzijn.
@@ -9,7 +9,7 @@ Obsidian kennisbank beheerd door een crew van 10 AI-subagenten via Claude Code. 
 - **Obsidian** (lokale vault app) + **Claude Code** (agent dispatcher)
 - **10 subagenten** gedefinieerd in `.claude/agents/` (auto-geladen bij sessiestart)
 - **Syncthing** voor sync tussen ZimaOS en Windows/telefoon
-- **Vault locatie Windows:** `C:\Users\Tom\OneDrive\Claude\MyBrainVault\`
+- **Vault locatie Windows:** `C:\Users\dell oem\OneDrive\Claude\MyBrainVault\`
 - **Vault locatie ZimaOS:** `/DATA/vault/`
 - **Docker:** `/DATA/vault-docker/` (vault-maintenance + syncthing containers)
 - **Syncthing Web UI:** `http://192.168.0.237:8384`

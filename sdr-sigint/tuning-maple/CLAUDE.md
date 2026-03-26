@@ -1,15 +1,15 @@
-# tuning-maple
+﻿# tuning-maple
 
 Radio frequentie referentietool — frequentielijsten, kaart, ISS tracker en signaalherkenning in één multi-tab interface.
 
-**Repo:** `C:\Users\Tom\OneDrive\Documents\GitHub\tuning-maple`
+**Repo:** `C:\Users\dell oem\OneDrive\Documents\GitHub\tuning-maple`
 
 ## Stack
 React 18 · TypeScript · Vite · shadcn/ui · Tailwind CSS · React Router
 
 ## Werken aan dit project
 ```bash
-cd "C:\Users\Tom\OneDrive\Documents\GitHub\tuning-maple"
+cd "C:\Users\dell oem\OneDrive\Documents\GitHub\tuning-maple"
 npm run dev
 ```
 

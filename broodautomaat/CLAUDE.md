@@ -1,33 +1,43 @@
-# Broodautomaat Hub
+﻿# BROODnodig! — Broodautomaat Hub
 
-Crowdsourced broodautomaat locator platform — twee frontend varianten die hetzelfde concept implementeren.
+Crowdsourced broodautomaat locator platform. **BROODnodig!** is de definitieve merged app (basis: broodautomaat-ervaring + features uit breadbot-locator).
 
-## Sub-projecten
+**Repo:** `C:\Users\dell oem\OneDrive\Documents\GitHub\broodautomaat-ervaring`
+**GitHub:** https://github.com/Styt0/broodautomaat-ervaring
 
-| Project | Naam | Kaart | Extra features | GitHub |
-|---------|------|-------|----------------|--------|
-| `breadbot-locator/` | BroodBot | Leaflet | Gamificatie (badges, leaderboard), Capacitor mobiel | [repo](https://github.com/Styt0/breadbot-locator) |
-| `broodautomaat-ervaring/` | BroodSpot | Mapbox GL | Import functionaliteit, gebruikersprofielen | [repo](https://github.com/Styt0/broodautomaat-ervaring) |
+## Status: Merged
 
-## Gemeenschappelijke stack
-React 18 + TypeScript + Vite + shadcn/ui + Tailwind CSS
+De twee originele projecten zijn samengevoegd:
+- **broodautomaat-ervaring** (BroodSpot) = basis (Mapbox, import, profiel, Supabase-ready)
+- **breadbot-locator** (BroodBot) = geporteerde features (gamificatie, foto upload, comments, achievement toasts, leaderboard)
 
-## Verschil
-- **BroodBot (Leaflet):** Open source kaart, geen API key nodig, Capacitor voor native mobiel
-- **BroodSpot (Mapbox):** Rijkere kaart styling, import features, gebruikersprofielen
+## Stack
+React 18 + TypeScript + Vite + shadcn/ui + Tailwind CSS + Mapbox GL
 
-## Consolidatie mogelijkheden
-- Beide projecten delen dezelfde use case en tech stack
-- Overweeg: features samenvoegen in één definitieve app
-- Best-of-both: Mapbox kaart + gamificatie + Capacitor mobiel + import + profielen
+## Features (merged)
+- Mapbox kaart met status-gekleurde markers
+- Dispenser toevoegen / status updaten / importeren (JSON)
+- Foto upload bij automaten
+- Reacties/comments systeem
+- Gamificatie: punten, levels, badges, leaderboard, achievement toasts
+- Gebruikersprofiel met favorieten + badges + ranglijst
+- 11 echte Belgische broodautomaten als seed data
 
-## Werken aan een sub-project
+## Routes
+- `/` — Homepage (hero + recent bijgewerkt)
+- `/map` — Kaartweergave + sidebar
+- `/add` — Automaat toevoegen
+- `/profile` — Profiel + favorieten + badges + leaderboard
+- `/import` — JSON import
+
+## Werken aan dit project
 ```bash
-# BroodBot (Leaflet)
-cd "C:\Users\Tom\OneDrive\Documents\GitHub\breadbot-locator"
-npm run dev
-
-# BroodSpot (Mapbox)
-cd "C:\Users\Tom\OneDrive\Documents\GitHub\broodautomaat-ervaring"
+cd "C:\Users\dell oem\OneDrive\Documents\GitHub\broodautomaat-ervaring"
 npm run dev
 ```
+
+## Archief
+- `breadbot-locator/` — Originele BroodBot (Leaflet + Capacitor). Features geport, repo bewaard als referentie.
+
+## Gerelateerde projecten
+- [[geo-platform/map_server/CLAUDE|map_server]] — offline kaartdata als Mapbox fallback

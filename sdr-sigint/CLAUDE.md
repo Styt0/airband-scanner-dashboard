@@ -1,4 +1,4 @@
-# SDR/SIGINT Hub
+﻿# SDR/SIGINT Hub
 
 Centrale hub voor alle SDR (Software Defined Radio) en SIGINT projecten — van hardware scanners tot web-based frequentietools.
 
@@ -56,9 +56,9 @@ React 18 + TypeScript + Vite + shadcn/ui + Tailwind CSS
 ## Werken aan een sub-project
 ```bash
 # Hub context
-cd "C:\Users\Tom\OneDrive\Claude\projects\sdr-sigint"
+cd "C:\Users\dell oem\OneDrive\Claude\projects\sdr-sigint"
 
 # Specifiek frontend repo
-cd "C:\Users\Tom\OneDrive\Documents\GitHub\airwave-aggregator"
+cd "C:\Users\dell oem\OneDrive\Documents\GitHub\airwave-aggregator"
 npm run dev
 ```

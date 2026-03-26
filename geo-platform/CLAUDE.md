@@ -1,4 +1,4 @@
-# Geo Platform Hub
+﻿# Geo Platform Hub
 
 Geospatiale services — offline kaartserver en threat monitoring met geo-data.
 
@@ -40,5 +40,5 @@ geosentinel (monitoring)
 
 ## Werken aan een sub-project
 ```bash
-cd "C:\Users\Tom\OneDrive\Claude\projects\geo-platform"
+cd "C:\Users\dell oem\OneDrive\Claude\projects\geo-platform"
 ```

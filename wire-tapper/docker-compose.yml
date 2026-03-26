@@ -1,0 +1,13 @@
+services:
+  wire-tapper:
+    build: .
+    container_name: wire-tapper
+    restart: unless-stopped
+    ports:
+      - "8484:8080"
+    environment:
+      - WIGLE_API_NAME=${WIGLE_API_NAME:-}
+      - WIGLE_API_TOKEN=${WIGLE_API_TOKEN:-}
+      - OPENCELLID_API_KEY=${OPENCELLID_API_KEY:-}
+      - SHODAN_API_KEY=${SHODAN_API_KEY:-}
+      - WPASEC_KEY=${WPASEC_KEY:-}

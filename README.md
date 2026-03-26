@@ -1,6 +1,6 @@
-# Claude Projects — Centrale Hub
+﻿# Claude Projects — Centrale Hub
 
-`C:\Users\Tom\OneDrive\Claude\projects\`
+`C:\Users\dell oem\OneDrive\Claude\projects\`
 
 Centrale locatie voor alle Claude Code projectcontexten. Elke map = één project met een `CLAUDE.md` die de context, regels en status bevat.
 
@@ -45,6 +45,7 @@ projects/
 ├── osint_researcher/              # OSINT pipeline (Open WebUI + Tor)
 ├── maghreb-watchtower/            # Maghreb monitoring (React) — thema: intelligence
 ├── osint-hub-collective/          # OSINT research hub (React) — thema: OSINT
+├── wire-tapper/                   # Wireless OSINT (Wi-Fi/BT/CCTV/IoT detectie) — :8484
 │
 │── Situational Awareness
 ├── astro-command-dashboard/       # TangoSierra.One dashboard (React)
@@ -91,7 +92,7 @@ projects/
 
 **Routering:** CLAUDE.md in vault root bevat prioriteitsregels (wellness eerst, dan food, dan postman, enz.)
 **Taal:** Agents antwoorden automatisch in de taal van de gebruiker.
-**Vault:** `C:\Users\Tom\OneDrive\Claude\MyBrainVault\` (Windows) | `/DATA/vault/` (ZimaOS)
+**Vault:** `C:\Users\dell oem\OneDrive\Claude\MyBrainVault\` (Windows) | `/DATA/vault/` (ZimaOS)
 
 ---
 
@@ -100,33 +101,33 @@ projects/
 ### Starten met een project
 ```bash
 # Hub-project (bv. SDR hub overzicht)
-cd "C:\Users\Tom\OneDrive\Claude\projects\sdr-sigint"
+cd "C:\Users\dell oem\OneDrive\Claude\projects\sdr-sigint"
 claude
 
 # Sub-project binnen hub
-cd "C:\Users\Tom\OneDrive\Claude\projects\sdr-sigint\airwave-aggregator"
+cd "C:\Users\dell oem\OneDrive\Claude\projects\sdr-sigint\airwave-aggregator"
 claude
 
 # Standalone project
-cd "C:\Users\Tom\OneDrive\Claude\projects\terrorism_database"
+cd "C:\Users\dell oem\OneDrive\Claude\projects\terrorism_database"
 claude
 ```
 
 ### Na een werksessie — wijzigingen opslaan
 ```bash
-cd "C:\Users\Tom\OneDrive\Claude\projects"
+cd "C:\Users\dell oem\OneDrive\Claude\projects"
 git add <project>/CLAUDE.md
 git commit -m "<project>: kort beschrijving van wat er veranderde"
 ```
 
 ### Nieuw project toevoegen
-1. Maak map aan: `mkdir C:\Users\Tom\OneDrive\Claude\projects\<naam>`
+1. Maak map aan: `mkdir C:\Users\dell oem\OneDrive\Claude\projects\<naam>`
 2. Maak `CLAUDE.md` met context
 3. Commit: `git add <naam>/ && git commit -m "<naam>: initial project context"`
 
 ## Versiegeschiedenis bekijken
 ```bash
-cd "C:\Users\Tom\OneDrive\Claude\projects"
+cd "C:\Users\dell oem\OneDrive\Claude\projects"
 git log --oneline                          # Alle commits
 git log --oneline -- zimaOS/CLAUDE.md     # Enkel zimaOS
 git diff HEAD~1 zimaOS/CLAUDE.md          # Wat veranderde in laatste commit
@@ -143,11 +144,11 @@ git show HEAD:zimaOS/CLAUDE.md            # Vorige versie bekijken
 Wanneer de zimaOS CLAUDE.md geüpdated wordt:
 ```bash
 # Van NAS naar OneDrive kopiëren
-ssh zimaos 'cat /DATA/CLAUDE.md' > "C:\Users\Tom\AppData\Local\Temp\NAS_CLAUDE.md"
-copy "C:\Users\Tom\AppData\Local\Temp\NAS_CLAUDE.md" "C:\Users\Tom\OneDrive\Claude\projects\zimaOS\CLAUDE.md"
-cd "C:\Users\Tom\OneDrive\Claude\projects"
+ssh zimaos 'cat /DATA/CLAUDE.md' > "C:\Users\dell oem\AppData\Local\Temp\NAS_CLAUDE.md"
+copy "C:\Users\dell oem\AppData\Local\Temp\NAS_CLAUDE.md" "C:\Users\dell oem\OneDrive\Claude\projects\zimaOS\CLAUDE.md"
+cd "C:\Users\dell oem\OneDrive\Claude\projects"
 git add zimaOS/CLAUDE.md && git commit -m "zimaOS: sync CLAUDE.md van NAS"
 
 # Van OneDrive naar NAS kopiëren (na lokale wijziging)
-scp "C:\Users\Tom\OneDrive\Claude\projects\zimaOS\CLAUDE.md" zimaos:/DATA/CLAUDE.md
+scp "C:\Users\dell oem\OneDrive\Claude\projects\zimaOS\CLAUDE.md" zimaos:/DATA/CLAUDE.md
 ```
