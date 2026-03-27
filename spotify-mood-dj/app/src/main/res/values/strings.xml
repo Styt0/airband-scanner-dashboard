@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">DJ News</string>
+    <string name="notification_channel_playback">Playback</string>
+    <string name="notification_channel_playback_desc">Music and news playback controls</string>
+    <string name="notification_title_music">DJ News — Playing music</string>
+    <string name="notification_title_news">DJ News — VRT NWS</string>
+</resources>
