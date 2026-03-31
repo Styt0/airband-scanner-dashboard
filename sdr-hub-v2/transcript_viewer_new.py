@@ -626,13 +626,13 @@ def get_db_stats(conn):
     }
 
 def get_hourly_data():
-    """Return 24 counts for a rolling window: slot[0]=oldest hour, slot[23]=current hour."""
+    """Return 24 counts for completed rolling hours: slot[0]=now-24h (oldest), slot[23]=now-1h (most recent)."""
     try:
         conn = get_db()
         rows = conn.execute("""
             SELECT strftime('%Y-%m-%d %H', begin_date) AS slot, COUNT(*) AS cnt
             FROM sdr_transmission
-            WHERE begin_date >= datetime('now', '-24 hours')
+            WHERE begin_date >= datetime('now', '-25 hours')
             AND data_file IS NOT NULL
             GROUP BY slot ORDER BY slot
         """).fetchall()
@@ -640,9 +640,10 @@ def get_hourly_data():
         row_dict = {r[0]: r[1] for r in rows}
         now = dt.utcnow()
         from datetime import timedelta as _td
-        # Build 24 slot keys from (now - 23h) to (now), oldest first
+        # 24 completed hours: (now-24h) to (now-1h), oldest first
+        # Uses -25h in SQL to ensure the earliest slot always gets its full data
         slots = [
-            (now - _td(hours=23 - i)).strftime('%Y-%m-%d %H')
+            (now - _td(hours=24 - i)).strftime('%Y-%m-%d %H')
             for i in range(24)
         ]
         return [row_dict.get(s, 0) for s in slots]
@@ -999,31 +1000,37 @@ def build_donut_svg(slices, size=100):
 
 # ── Sparkline SVG ─────────────────────────────────────────────────────────────
 def build_sparkline_svg(hourly, W=280, H=110):
+    from datetime import timedelta as _td
+    now   = dt.utcnow()
     max_v = max(hourly) or 1
-    pts = []
+    N     = len(hourly)  # 24
+    pts   = []
     for i, v in enumerate(hourly):
-        x = i * W / 23
+        x = i * W / (N - 1)
         y = H - 8 - (v / max_v) * (H - 18)
         pts.append((x, y))
-    path = "M" + " L".join(f"{x:.1f},{y:.1f}" for x,y in pts)
-    area = path + f" L{W},{ H} L0,{H} Z"
+    path = "M" + " L".join(f"{x:.1f},{y:.1f}" for x, y in pts)
+    area = path + f" L{W},{H} L0,{H} Z"
     p = [f'<svg width="100%" height="{H}" viewBox="0 0 {W} {H}" preserveAspectRatio="none">']
     p.append('<defs><linearGradient id="sg" x1="0" y1="0" x2="0" y2="1">')
     p.append('<stop offset="0%" stop-color="#f5c518" stop-opacity=".25"/>')
     p.append('<stop offset="100%" stop-color="#f5c518" stop-opacity="0"/>')
     p.append('</linearGradient></defs>')
-    for y_pos in [H*0.25, H*0.5, H*0.75]:
+    for y_pos in [H * 0.25, H * 0.5, H * 0.75]:
         p.append(f'<line x1="0" y1="{y_pos:.0f}" x2="{W}" y2="{y_pos:.0f}" stroke="#1e1e38" stroke-width="1"/>')
     p.append(f'<path d="{area}" fill="url(#sg)"/>')
     p.append(f'<path d="{path}" fill="none" stroke="#f5c518" stroke-width="1.5"/>')
-    now_h = dt.utcnow().hour
-    nx = now_h * W / 23
-    p.append(f'<line x1="{nx:.0f}" y1="0" x2="{nx:.0f}" y2="{H}" stroke="#f5c518" stroke-width="1" stroke-dasharray="3,3" opacity=".4"/>')
-    p.append(f'<text x="0" y="{H}" fill="#2a2a4a" font-size="8" font-family="monospace">00</text>')
-    p.append(f'<text x="{W*6/23:.0f}" y="{H}" fill="#2a2a4a" font-size="8" font-family="monospace">06</text>')
-    p.append(f'<text x="{W*12/23:.0f}" y="{H}" fill="#2a2a4a" font-size="8" font-family="monospace">12</text>')
-    p.append(f'<text x="{W*18/23:.0f}" y="{H}" fill="#2a2a4a" font-size="8" font-family="monospace">18</text>')
-    p.append(f'<text x="{nx-2:.0f}" y="{H}" text-anchor="end" fill="#f5c518" font-size="8" font-family="monospace">now</text>')
+    # "now" cursor always at the right edge — slot[N-1] is always the most recent completed hour
+    p.append(f'<line x1="{W}" y1="0" x2="{W}" y2="{H}" stroke="#f5c518" stroke-width="1" stroke-dasharray="3,3" opacity=".4"/>')
+    # Dynamic UTC labels: find which slot index corresponds to 00z, 06z, 12z, 18z
+    # slot[i] = (now - (24 - i)) hours truncated to hour
+    for lh in [0, 6, 12, 18]:
+        for i in range(N):
+            if (now - _td(hours=24 - i)).hour == lh:
+                x = i * W / (N - 1)
+                p.append(f'<text x="{x:.0f}" y="{H}" fill="#4a4a6a" font-size="8" font-family="monospace">{lh:02d}z</text>')
+                break
+    p.append(f'<text x="{W}" y="{H}" text-anchor="end" fill="#f5c518" font-size="8" font-family="monospace">now</text>')
     p.append('</svg>')
     return ''.join(p)
 
