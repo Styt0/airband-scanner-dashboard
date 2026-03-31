@@ -828,9 +828,10 @@ def generate_map_svg(tx_id, begin_date, end_date, label, freq_hz=0, text=None):
 
 # ── Live global radar SVG ─────────────────────────────────────────────────────
 def generate_live_radar_svg():
-    W, H = 340, 240
-    cx, cy = W/2, H/2
-    ppk = cy / 20
+    # ── V3: 500×500 square canvas, VFR chart style ───────────────────────────
+    W, H = 500, 500
+    cx, cy = W / 2, H / 2
+    ppk = cy / 20   # 12.5 px/km — 20 km radius
 
     def xy(lat, lon):
         """Convert lat/lon to SVG x,y relative to EBAW centre."""
@@ -838,6 +839,7 @@ def generate_live_radar_svg():
         dy = -(lat - EBAW_LAT) * 111.0
         return cx + dx * ppk, cy + dy * ppk
 
+    # ── Fetch live aircraft ───────────────────────────────────────────────────
     aircraft = []
     if _ureq:
         try:
@@ -850,22 +852,44 @@ def generate_live_radar_svg():
                 dy = -(lat - EBAW_LAT) * 111.0
                 dist = math.sqrt(dx**2 + dy**2)
                 if dist > 22: continue
-                x = cx + dx * ppk
-                y = cy + dy * ppk
-                aircraft.append({**ac, '_x': x, '_y': y, '_dist': dist})
-        except: pass
+                aircraft.append({**ac, '_x': cx + dx*ppk, '_y': cy + dy*ppk, '_dist': dist})
+        except:
+            pass
 
-    # viewBox ensures content scales correctly when CSS sets width:100%
     p = [f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" width="{W}" height="{H}" style="background:#05050a;display:block">']
 
-    for km, stroke in [(5,'#12122a'),(10,'#10102a'),(20,'#0c0c26')]:
-        r = km * ppk
-        p.append(f'<circle cx="{cx:.1f}" cy="{cy:.1f}" r="{r:.1f}" fill="none" stroke="{stroke}" stroke-width="1"/>')
-        p.append(f'<text x="{cx+r+2:.0f}" y="{cy-2:.0f}" fill="#18183a" font-size="7" font-family="monospace">{km}km</text>')
-    p.append(f'<line x1="{cx:.0f}" y1="2" x2="{cx:.0f}" y2="{H-2}" stroke="#0e0e28" stroke-width="1"/>')
-    p.append(f'<line x1="2" y1="{cy:.0f}" x2="{W-2}" y2="{cy:.0f}" stroke="#0e0e28" stroke-width="1"/>')
+    # ── EBBU TMA boundary ring (~17 km) ──────────────────────────────────────
+    tma_r = 17 * ppk
+    p.append(f'<circle cx="{cx:.1f}" cy="{cy:.1f}" r="{tma_r:.1f}" '
+             f'fill="rgba(40,100,220,0.07)" stroke="rgba(60,120,240,0.40)" '
+             f'stroke-width="1" stroke-dasharray="5,4"/>')
+    p.append(f'<text x="{cx-tma_r+6:.0f}" y="{cy-4:.0f}" fill="rgba(80,140,255,0.45)" '
+             f'font-size="8" font-family="monospace" font-weight="bold">EBBU TMA</text>')
+    p.append(f'<text x="{cx-tma_r+6:.0f}" y="{cy+8:.0f}" fill="rgba(80,140,255,0.35)" '
+             f'font-size="7" font-family="monospace">FL095 / 3500ft</text>')
 
-    # ── Rivers: Schelde (north→south) and Rupel (east→confluence) ────────────
+    # ── Range rings ───────────────────────────────────────────────────────────
+    for km, stroke in [(5, '#12122a'), (10, '#10102a'), (20, '#0a0a22')]:
+        r = km * ppk
+        p.append(f'<circle cx="{cx:.1f}" cy="{cy:.1f}" r="{r:.1f}" fill="none" stroke="{stroke}" stroke-width="0.8"/>')
+        if km < 20:
+            p.append(f'<text x="{cx+r+3:.0f}" y="{cy-3:.0f}" fill="#18183a" font-size="7" font-family="monospace">{km}km</text>')
+
+    # ── Cross-hairs ───────────────────────────────────────────────────────────
+    p.append(f'<line x1="{cx:.0f}" y1="0" x2="{cx:.0f}" y2="{H}" stroke="rgba(255,255,255,0.022)" stroke-width="0.5"/>')
+    p.append(f'<line x1="0" y1="{cy:.0f}" x2="{W}" y2="{cy:.0f}" stroke="rgba(255,255,255,0.022)" stroke-width="0.5"/>')
+
+    # ── EBAW CTR (~9 km, magenta dashed) ─────────────────────────────────────
+    ctr_r = 9 * ppk
+    p.append(f'<circle cx="{cx:.1f}" cy="{cy:.1f}" r="{ctr_r:.1f}" '
+             f'fill="none" stroke="#d048e8" stroke-width="1.4" stroke-dasharray="6,4" opacity="0.65"/>')
+    ctr_lx, ctr_ly = cx + ctr_r * 0.68, cy + ctr_r * 0.72
+    p.append(f'<text x="{ctr_lx:.0f}" y="{ctr_ly:.0f}" fill="#d048e8" '
+             f'font-size="8" font-family="monospace" font-weight="bold" opacity="0.70">EBAW CTR</text>')
+    p.append(f'<text x="{ctr_lx:.0f}" y="{ctr_ly+10:.0f}" fill="#d048e8" '
+             f'font-size="7" font-family="monospace" opacity="0.50">FL065 / SFC</text>')
+
+    # ── Rivers (chart blue, brighter) ─────────────────────────────────────────
     _schelde = [
         (51.38, 4.25), (51.33, 4.28), (51.29, 4.31), (51.25, 4.36),
         (51.22, 4.40), (51.19, 4.40), (51.16, 4.38), (51.13, 4.38),
@@ -874,9 +898,13 @@ def generate_live_radar_svg():
     _rupel = [
         (51.10, 4.56), (51.09, 4.49), (51.08, 4.43), (51.07, 4.36), (51.07, 4.32),
     ]
-    for _river in (_schelde, _rupel):
-        pts_str = ' '.join(f'{xy(la,lo)[0]:.1f},{xy(la,lo)[1]:.1f}' for la,lo in _river)
-        p.append(f'<polyline points="{pts_str}" fill="none" stroke="#0e2a45" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>')
+    _kleine_nete = [
+        (51.075, 4.53), (51.078, 4.48), (51.085, 4.44),
+    ]
+    for _river, _sw in [(_schelde, 3.0), (_rupel, 2.0), (_kleine_nete, 1.5)]:
+        pts_str = ' '.join(f'{xy(la,lo)[0]:.1f},{xy(la,lo)[1]:.1f}' for la, lo in _river)
+        p.append(f'<polyline points="{pts_str}" fill="none" stroke="#2068a8" stroke-width="{_sw}" '
+                 f'stroke-linecap="round" stroke-linejoin="round" opacity="0.75"/>')
 
     # ── VFR reporting points (AIP 30 DEC 2021 exact coords) ──────────────────
     _waypoints = [
@@ -885,42 +913,59 @@ def generate_live_radar_svg():
         ('DUFFY', 51.08528, 4.49472),   # Duffel railway bridge
         ('WISKY', 51.08000, 4.36639),   # Rupel Yacht Club, Willebroek
         ('PORTA', 51.23083, 4.44111),   # Merksem Sportpaleis
-        ('BRUNO', 51.11861, 4.84222),   # DVOR-DME BUN
+        ('BRUNO', 51.11861, 4.84222),   # DVOR-DME BUN (off-radar at 20 km)
     ]
     for _name, _wlat, _wlon in _waypoints:
         wx, wy = xy(_wlat, _wlon)
-        if not (2 < wx < W-2 and 2 < wy < H-2): continue   # skip if off radar
-        s = 5
-        p.append(f'<g opacity="0.28">'
+        if not (2 < wx < W-2 and 2 < wy < H-2): continue
+        s = 6
+        p.append(f'<g opacity="0.55">'
                  f'<polygon points="{wx:.0f},{wy-s:.0f} {wx-s:.0f},{wy+s:.0f} {wx+s:.0f},{wy+s:.0f}" '
-                 f'fill="none" stroke="#d4a800" stroke-width="1.2"/>'
-                 f'<text x="{wx+7:.0f}" y="{wy+4:.0f}" fill="#d4a800" font-size="7" '
+                 f'fill="rgba(212,168,0,0.12)" stroke="#d4a800" stroke-width="1.3"/>'
+                 f'<text x="{wx+9:.0f}" y="{wy+4:.0f}" fill="#d4a800" font-size="8" '
                  f'font-family="monospace" font-weight="bold">{_name}</text>'
                  f'</g>')
 
-    bx, by = xy(EBBR_LAT, EBBR_LON)
-    p.append(f'<line x1="{bx-8:.0f}" y1="{by:.0f}" x2="{bx+8:.0f}" y2="{by:.0f}" stroke="#3b82f6" stroke-width="2" stroke-linecap="round"/>')
-    p.append(f'<line x1="{bx:.0f}" y1="{by-8:.0f}" x2="{bx:.0f}" y2="{by+8:.0f}" stroke="#3b82f6" stroke-width="2" stroke-linecap="round"/>')
-    p.append(f'<circle cx="{bx:.0f}" cy="{by:.0f}" r="2.5" fill="#3b82f6"/>')
-    p.append(f'<text x="{bx+10:.0f}" y="{by-4:.0f}" fill="#3b82f6" font-size="7" font-family="monospace" font-weight="bold">EBBR</text>')
+    # ── EBAW airport symbol ───────────────────────────────────────────────────
+    asz = 9
+    p.append(f'<line x1="{cx-asz:.0f}" y1="{cy:.0f}" x2="{cx+asz:.0f}" y2="{cy:.0f}" stroke="#22c55e" stroke-width="2" stroke-linecap="round"/>')
+    p.append(f'<line x1="{cx:.0f}" y1="{cy-asz:.0f}" x2="{cx:.0f}" y2="{cy+asz:.0f}" stroke="#22c55e" stroke-width="2" stroke-linecap="round"/>')
+    p.append(f'<circle cx="{cx:.0f}" cy="{cy:.0f}" r="{asz+4:.0f}" fill="none" stroke="#22c55e" stroke-width="0.7" opacity="0.45"/>')
+    p.append(f'<circle cx="{cx:.0f}" cy="{cy:.0f}" r="3" fill="#22c55e"/>')
+    p.append(f'<text x="{cx+16:.0f}" y="{cy-7:.0f}" fill="#22c55e" font-size="9" font-family="monospace" font-weight="bold">EBAW</text>')
 
-    p.append(f'<line x1="{cx-10:.0f}" y1="{cy:.0f}" x2="{cx+10:.0f}" y2="{cy:.0f}" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round"/>')
-    p.append(f'<line x1="{cx:.0f}" y1="{cy-10:.0f}" x2="{cx:.0f}" y2="{cy+10:.0f}" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round"/>')
-    p.append(f'<circle cx="{cx:.0f}" cy="{cy:.0f}" r="3.5" fill="#22c55e"/>')
-    p.append(f'<text x="{cx+13:.0f}" y="{cy-6:.0f}" fill="#22c55e" font-size="8" font-family="monospace" font-weight="bold">EBAW</text>')
+    # ── North indicator ───────────────────────────────────────────────────────
+    p.append(f'<text x="{cx-4:.0f}" y="16" fill="#202040" font-size="10" font-family="monospace" font-weight="bold">N</text>')
+    p.append(f'<line x1="{cx:.0f}" y1="19" x2="{cx:.0f}" y2="28" stroke="#202040" stroke-width="1.2"/>')
 
+    # ── Aircraft: dot + glow ring + heading tick + labels ────────────────────
     for ac in aircraft:
         x, y = ac['_x'], ac['_y']
         if not (4 < x < W-4 and 4 < y < H-4): continue
-        color = _alt_color(ac.get('alt_baro'))
-        p.append(_aircraft_svg(x, y, ac.get('track'), color))
+        col   = _alt_color(ac.get('alt_baro'))
+        track = ac.get('track') or 0
+        hr    = math.radians(track)
+        tx    = x + math.sin(hr) * 16
+        ty    = y - math.cos(hr) * 16
+        alt   = ac.get('alt_baro')
+        flight = (ac.get('flight') or '').strip()
+        alt_lbl = (f"FL{alt//100:03d}" if alt >= 1800 else f"{alt}ft") if alt else ''
+        p.append(f'<line x1="{x:.1f}" y1="{y:.1f}" x2="{tx:.1f}" y2="{ty:.1f}" '
+                 f'stroke="{col}" stroke-width="1.2" opacity="0.6"/>')
+        p.append(f'<circle cx="{x:.1f}" cy="{y:.1f}" r="7" fill="none" stroke="{col}" stroke-width="0.7" opacity="0.35"/>')
+        p.append(f'<circle cx="{x:.1f}" cy="{y:.1f}" r="4" fill="{col}" opacity="0.9"/>')
+        if flight:
+            p.append(f'<text x="{x+9:.1f}" y="{y-3:.1f}" fill="{col}" font-size="9" font-family="monospace" font-weight="bold">{flight}</text>')
+        if alt_lbl:
+            p.append(f'<text x="{x+9:.1f}" y="{y+8:.1f}" fill="{col}" font-size="8" font-family="monospace" opacity="0.75">{alt_lbl}</text>')
 
     if not aircraft:
-        p.append(f'<text x="{cx:.0f}" y="{cy+30:.0f}" text-anchor="middle" fill="#1e1e3a" font-size="11" font-family="monospace">no aircraft data</text>')
+        p.append(f'<text x="{cx:.0f}" y="{cy+35:.0f}" text-anchor="middle" fill="#1e1e3a" font-size="11" font-family="monospace">no aircraft data</text>')
 
-    for i, (col, lbl) in enumerate([('#3b82f6','<FL280'),('#fcbb00','<10k'),('#fb2c36','<3k'),('#52525b','high')]):
-        lx = 4 + i*72
-        p.append(f'<circle cx="{lx+3}" cy="{H-6}" r="3" fill="{col}"/>')
+    # ── Legend ────────────────────────────────────────────────────────────────
+    for i, (col, lbl) in enumerate([('#3b82f6', '<FL280'), ('#fcbb00', '<10k'), ('#fb2c36', '<3k'), ('#52525b', 'high')]):
+        lx = 6 + i * 88
+        p.append(f'<circle cx="{lx+3}" cy="{H-7}" r="3" fill="{col}"/>')
         p.append(f'<text x="{lx+9}" y="{H-3}" fill="{col}" font-size="7" font-family="monospace">{lbl}</text>')
 
     p.append(f'<text x="{W-4}" y="{H-3}" text-anchor="end" fill="#1e1e3a" font-size="7" font-family="monospace">{len(aircraft)} ac</text>')
