@@ -1,0 +1,1077 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>EBAW SDR Monitor — V2 Mockup</title>
+<style>
+/* ─── RESET & BASE ─── */
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg-void:    #050508;
+  --bg-deep:    #080810;
+  --bg-panel:   #0c0c16;
+  --bg-card:    #10101e;
+  --bg-lift:    #161628;
+  --border:     #1e1e38;
+  --border-hi:  #2a2a50;
+  --text-hi:    #f0f0ff;
+  --text-mid:   #8888b0;
+  --text-lo:    #3a3a5a;
+  --yellow:     #f5c518;
+  --cyan:       #22d3ee;
+  --blue:       #3b82f6;
+  --green:      #22c55e;
+  --orange:     #f97316;
+  --red:        #ef4444;
+  --purple:     #a855f7;
+  --pink:       #ec4899;
+}
+html,body{height:100%;overflow:hidden}
+body{
+  font-family:'Inter',ui-sans-serif,system-ui,-apple-system,sans-serif;
+  background:var(--bg-void);
+  color:var(--text-hi);
+  font-size:13px;
+  line-height:1.5;
+}
+
+/* ─── TOP BAR ─── */
+.topbar{
+  height:48px;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 20px;
+  background:var(--bg-deep);
+  border-bottom:1px solid var(--border);
+  flex-shrink:0;
+  position:relative;
+  z-index:50;
+}
+.tb-left{display:flex;align-items:center;gap:16px}
+.logo{
+  font-size:13px;font-weight:900;letter-spacing:.06em;
+  color:var(--text-hi);display:flex;align-items:center;gap:8px;
+}
+.logo-badge{
+  background:var(--yellow);color:#000;
+  font-size:9px;font-weight:900;letter-spacing:.12em;
+  padding:2px 6px;border-radius:4px;
+}
+.tb-sep{width:1px;height:18px;background:var(--border-hi)}
+.tb-stat{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text-mid)}
+.tb-stat strong{color:var(--text-hi);font-weight:700;font-variant-numeric:tabular-nums}
+.tb-stat .dot{width:6px;height:6px;border-radius:50%}
+.dot-green{background:var(--green);animation:pulse 2s infinite}
+.dot-yellow{background:var(--yellow)}
+.dot-cyan{background:var(--cyan)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+.tb-right{display:flex;align-items:center;gap:14px}
+.tb-time{
+  font-family:ui-monospace,monospace;
+  font-size:12px;color:var(--text-mid);letter-spacing:.06em;
+}
+.tb-time strong{color:var(--yellow)}
+.btn-mini{
+  background:var(--bg-lift);border:1px solid var(--border-hi);
+  color:var(--text-mid);border-radius:6px;padding:4px 10px;
+  font-size:11px;font-weight:600;cursor:pointer;letter-spacing:.04em;
+  transition:all .15s;
+}
+.btn-mini:hover{background:var(--bg-card);color:var(--text-hi);border-color:var(--border-hi)}
+.btn-mini.active{background:var(--yellow);color:#000;border-color:var(--yellow)}
+
+/* ─── LAYOUT ─── */
+.app{
+  display:grid;
+  grid-template-columns:1fr 360px;
+  grid-template-rows:1fr 200px;
+  height:calc(100vh - 48px);
+  gap:0;
+}
+
+/* ─── LEFT: TRANSCRIPT FEED ─── */
+.feed-panel{
+  grid-row:1/2; grid-column:1/2;
+  display:flex;flex-direction:column;
+  border-right:1px solid var(--border);
+  overflow:hidden;
+}
+
+/* Feed header with freq filter pills */
+.feed-header{
+  padding:10px 16px 8px;
+  border-bottom:1px solid var(--border);
+  background:var(--bg-panel);
+  flex-shrink:0;
+}
+.feed-title{
+  font-size:9px;font-weight:800;letter-spacing:.2em;
+  color:var(--text-lo);text-transform:uppercase;margin-bottom:8px;
+}
+.pill-row{display:flex;gap:5px;flex-wrap:wrap}
+.pill{
+  padding:3px 10px;border-radius:20px;
+  font-size:10px;font-weight:700;letter-spacing:.06em;
+  border:1px solid transparent;cursor:pointer;
+  transition:all .15s;white-space:nowrap;
+}
+.pill-all{background:var(--yellow);color:#000;border-color:var(--yellow)}
+.pill-twr{background:#1a2040;color:var(--blue);border-color:#2535701}
+.pill-app{background:#1e1508;color:var(--orange);border-color:#3a2510}
+.pill-arr{background:#1a1508;color:#f59e0b;border-color:#33290f}
+.pill-dep{background:#1a1030;color:var(--purple);border-color:#2e1a55}
+.pill-gnd{background:#141415;color:#71717a;border-color:#28282d}
+.pill-emer{background:#200808;color:var(--red);border-color:#3d0f0f}
+
+/* Feed scroll */
+.feed-scroll{
+  flex:1;overflow-y:auto;
+  scrollbar-width:thin;scrollbar-color:var(--border) transparent;
+}
+.feed-scroll::-webkit-scrollbar{width:3px}
+.feed-scroll::-webkit-scrollbar-thumb{background:var(--border-hi);border-radius:3px}
+
+/* Transmission card */
+.tx-card{
+  display:grid;
+  grid-template-columns:4px 90px 90px 1fr auto;
+  align-items:stretch;
+  border-bottom:1px solid var(--border);
+  transition:background .1s;
+  min-height:64px;
+}
+.tx-card:hover{background:var(--bg-panel)}
+.tx-card.fresh{animation:fadeIn .4s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+
+/* Stripe */
+.tx-stripe{border-radius:0}
+
+/* Time cell */
+.tx-time{
+  padding:12px 10px;
+  display:flex;flex-direction:column;justify-content:center;
+  border-right:1px solid var(--border);
+}
+.tx-time-main{
+  font-family:ui-monospace,monospace;font-size:12px;
+  color:var(--text-hi);font-weight:600;letter-spacing:.03em;
+}
+.tx-time-dur{
+  font-size:10px;color:var(--yellow);
+  font-family:ui-monospace,monospace;margin-top:2px;
+}
+
+/* Freq cell */
+.tx-freq{
+  padding:10px 10px;
+  display:flex;flex-direction:column;justify-content:center;
+  border-right:1px solid var(--border);
+}
+.tx-freq-mhz{
+  font-size:15px;font-weight:800;
+  font-family:ui-monospace,monospace;
+  letter-spacing:-.01em;color:var(--text-hi);
+}
+.tx-freq-tag{
+  display:inline-flex;align-items:center;gap:4px;margin-top:3px;
+}
+.tx-freq-badge{
+  font-size:8px;font-weight:800;letter-spacing:.1em;
+  padding:1px 5px;border-radius:3px;
+}
+.tx-freq-name{font-size:10px;color:var(--text-mid)}
+
+/* Transcript cell — HERO */
+.tx-text{
+  padding:12px 14px;
+  display:flex;flex-direction:column;justify-content:center;
+  gap:5px;
+}
+.tx-speech{
+  font-size:15px;line-height:1.55;color:var(--text-hi);
+  font-weight:500;letter-spacing:-.01em;
+}
+.tx-speech.empty{
+  font-size:12px;color:var(--text-lo);
+  font-style:italic;font-weight:400;
+}
+.tx-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.tx-badge{
+  font-size:9px;font-weight:700;letter-spacing:.08em;
+  padding:2px 7px;border-radius:4px;text-transform:uppercase;
+}
+.badge-dg{background:#03250e;color:var(--green);border:1px solid #0a3a18}
+.badge-wh{background:#051525;color:var(--cyan);border:1px solid #082035}
+.badge-pd{background:var(--bg-lift);color:var(--text-lo);border:1px solid var(--border)}
+.badge-ns{background:var(--bg-lift);color:var(--text-lo);border:1px solid var(--border)}
+
+/* Confidence bar */
+.conf-bar{
+  display:flex;gap:2px;align-items:center;
+}
+.conf-seg{
+  width:14px;height:3px;border-radius:2px;
+  background:var(--border-hi);
+}
+.conf-seg.on{background:var(--yellow)}
+
+/* Actions cell */
+.tx-actions{
+  padding:10px 12px;
+  display:flex;align-items:center;gap:6px;
+}
+.btn-play{
+  width:30px;height:30px;border-radius:50%;
+  background:var(--bg-lift);border:1px solid var(--border-hi);
+  color:var(--text-hi);cursor:pointer;font-size:10px;
+  display:flex;align-items:center;justify-content:center;
+  transition:all .15s;flex-shrink:0;
+}
+.btn-play:hover{background:var(--yellow);border-color:var(--yellow);color:#000}
+.btn-map{
+  background:none;border:1px solid var(--border-hi);
+  color:var(--cyan);border-radius:6px;padding:4px 8px;
+  font-size:10px;cursor:pointer;font-weight:600;
+  white-space:nowrap;transition:all .15s;
+}
+.btn-map:hover{background:#0a1e26;border-color:var(--cyan)}
+
+/* NEW badge for live */
+.tx-new{
+  width:6px;height:6px;border-radius:50%;
+  background:var(--green);flex-shrink:0;
+  animation:pulse 2s infinite;
+  margin-top:4px;
+}
+
+/* ─── RIGHT: ADS-B PANEL ─── */
+.adsb-panel{
+  grid-row:1/2; grid-column:2/3;
+  display:flex;flex-direction:column;
+  overflow:hidden;
+  background:var(--bg-panel);
+}
+.panel-header{
+  padding:10px 14px 8px;
+  border-bottom:1px solid var(--border);
+  flex-shrink:0;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.panel-title{
+  font-size:9px;font-weight:800;letter-spacing:.2em;
+  color:var(--text-lo);text-transform:uppercase;
+}
+.panel-live{
+  display:flex;align-items:center;gap:5px;
+  font-size:9px;font-weight:700;color:var(--green);letter-spacing:.08em;
+}
+
+/* Radar map */
+.radar-wrap{
+  flex-shrink:0;
+  position:relative;
+  aspect-ratio:1;
+  max-height:280px;
+  border-bottom:1px solid var(--border);
+  background:#06060f;
+  overflow:hidden;
+}
+.radar-wrap svg{width:100%;height:100%;display:block}
+
+/* Aircraft list */
+.ac-list{
+  flex:1;overflow-y:auto;
+  scrollbar-width:thin;scrollbar-color:var(--border) transparent;
+}
+.ac-list::-webkit-scrollbar{width:3px}
+.ac-list::-webkit-scrollbar-thumb{background:var(--border-hi);border-radius:3px}
+
+.ac-row{
+  display:grid;
+  grid-template-columns:8px 1fr auto;
+  align-items:center;gap:8px;
+  padding:7px 14px;
+  border-bottom:1px solid var(--border);
+  transition:background .1s;cursor:default;
+}
+.ac-row:hover{background:var(--bg-lift)}
+.ac-row.ac-linked{background:#0a1420}
+.ac-row.ac-linked:hover{background:#0d1a28}
+
+.ac-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.ac-info{min-width:0}
+.ac-flight{font-size:12px;font-weight:700;color:var(--text-hi);font-family:ui-monospace,monospace}
+.ac-detail{font-size:10px;color:var(--text-mid);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ac-right{text-align:right;flex-shrink:0}
+.ac-alt{font-size:11px;font-weight:700;font-family:ui-monospace,monospace;color:var(--text-hi)}
+.ac-gs{font-size:10px;color:var(--text-mid)}
+.ac-tx-badge{
+  display:inline-block;font-size:8px;font-weight:700;
+  padding:1px 5px;border-radius:3px;margin-top:2px;
+  background:var(--yellow);color:#000;
+}
+
+/* ─── BOTTOM: ANALYTICS STRIP ─── */
+.analytics-strip{
+  grid-row:2/3; grid-column:1/3;
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr 320px;
+  border-top:1px solid var(--border);
+  background:var(--bg-deep);
+  overflow:hidden;
+}
+.analytics-block{
+  padding:12px 16px;
+  border-right:1px solid var(--border);
+  display:flex;flex-direction:column;gap:4px;
+  overflow:hidden;
+}
+.ab-title{
+  font-size:8px;font-weight:800;letter-spacing:.2em;
+  color:var(--text-lo);text-transform:uppercase;margin-bottom:4px;
+}
+
+/* Freq activity bars */
+.freq-bar-row{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+.freq-bar-label{font-size:10px;color:var(--text-mid);width:90px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:0}
+.freq-bar-track{flex:1;height:4px;background:var(--border);border-radius:2px;overflow:hidden}
+.freq-bar-fill{height:100%;border-radius:2px;transition:width .3s}
+.freq-bar-count{font-size:10px;color:var(--text-lo);font-family:ui-monospace,monospace;width:28px;text-align:right;flex-shrink:0}
+
+/* Donut chart */
+.donut-row{display:flex;align-items:center;gap:12px;flex:1}
+.donut-svg{flex-shrink:0}
+.donut-legend{display:flex;flex-direction:column;gap:3px;flex:1;min-width:0}
+.dl-item{display:flex;align-items:center;gap:6px;font-size:10px}
+.dl-dot{width:7px;height:7px;border-radius:2px;flex-shrink:0}
+.dl-label{color:var(--text-mid);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dl-pct{color:var(--yellow);font-weight:700;font-family:ui-monospace,monospace;width:28px;text-align:right;flex-shrink:0}
+
+/* KPI grid bottom right */
+.kpi-block{
+  padding:10px 14px;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:6px;
+  align-content:start;
+}
+.kpi-mini{
+  background:var(--bg-card);border:1px solid var(--border);
+  border-radius:8px;padding:8px 10px;
+  position:relative;overflow:hidden;
+}
+.kpi-mini::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:var(--ka,var(--border));border-radius:2px 2px 0 0;
+}
+.kpi-label{font-size:8px;font-weight:700;letter-spacing:.14em;color:var(--text-lo);text-transform:uppercase;margin-bottom:3px}
+.kpi-value{font-size:17px;font-weight:800;font-family:ui-monospace,monospace;line-height:1;font-variant-numeric:tabular-nums}
+.kpi-sub{font-size:9px;color:var(--text-lo);margin-top:2px}
+.kv-y{color:var(--yellow)}.kv-c{color:var(--cyan)}.kv-g{color:var(--green)}.kv-r{color:var(--red)}.kv-b{color:var(--blue)}.kv-o{color:var(--orange)}
+
+/* ─── HOVER TOOLTIP for aircraft ─── */
+.tooltip{
+  display:none;position:fixed;z-index:200;
+  background:var(--bg-card);border:1px solid var(--border-hi);
+  border-radius:10px;padding:10px 14px;
+  font-size:11px;pointer-events:none;
+  box-shadow:0 8px 32px rgba(0,0,0,.6);
+  max-width:220px;
+}
+
+/* ─── Frequency color system ─── */
+.c-twr{color:var(--blue)}   .bg-twr{background:var(--blue)}
+.c-app{color:var(--orange)}  .bg-app{background:var(--orange)}
+.c-arr{color:#f59e0b}        .bg-arr{background:#f59e0b}
+.c-dep{color:var(--purple)}  .bg-dep{background:var(--purple)}
+.c-gnd{color:#71717a}        .bg-gnd{background:#71717a}
+.c-del{color:var(--pink)}    .bg-del{background:var(--pink)}
+.c-emer{color:var(--red)}    .bg-emer{background:var(--red)}
+.c-info{color:var(--cyan)}   .bg-info{background:var(--cyan)}
+.c-ctl{color:var(--yellow)}  .bg-ctl{background:var(--yellow)}
+
+/* ─── ROW TINTS ─── */
+.tx-card[data-type="twr"]{background:#09101e}.tx-card[data-type="twr"]:hover{background:#0e1830}
+.tx-card[data-type="app"]{background:#120d07}.tx-card[data-type="app"]:hover{background:#1c1308}
+.tx-card[data-type="arr"]{background:#110e06}.tx-card[data-type="arr"]:hover{background:#1a1508}
+.tx-card[data-type="dep"]{background:#0f0920}.tx-card[data-type="dep"]:hover{background:#170d35}
+.tx-card[data-type="emer"]{background:#160508}.tx-card[data-type="emer"]:hover{background:#220808}
+
+/* ─── RESPONSIVE ─── */
+@media(max-width:900px){
+  .app{grid-template-columns:1fr;grid-template-rows:1fr auto auto}
+  .adsb-panel{grid-row:2;grid-column:1;max-height:320px}
+  .analytics-strip{grid-row:3;grid-column:1;grid-template-columns:1fr 1fr}
+  html,body{overflow:auto}
+  .app{height:auto}
+}
+@media(max-width:600px){
+  .analytics-strip{grid-template-columns:1fr}
+  .tx-card{grid-template-columns:4px 70px 1fr auto}
+  .tx-freq{display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════ TOP BAR ═══════════════ -->
+<div class="topbar">
+  <div class="tb-left">
+    <div class="logo">
+      ✈ EBAW SDR
+      <span class="logo-badge">MONITOR</span>
+    </div>
+    <div class="tb-sep"></div>
+    <div class="tb-stat">
+      <div class="dot dot-green"></div>
+      <span><strong>23</strong> aircraft</span>
+    </div>
+    <div class="tb-stat">
+      <div class="dot dot-yellow"></div>
+      <span><strong>4,821</strong> transmissions</span>
+    </div>
+    <div class="tb-stat">
+      <div class="dot dot-cyan"></div>
+      <span>Deepgram <strong>142</strong>/500</span>
+    </div>
+  </div>
+  <div class="tb-right">
+    <div class="tb-time">
+      <strong>13:28:44</strong> CET&nbsp;&nbsp;·&nbsp;&nbsp;Antwerpen
+    </div>
+    <button class="btn-mini active">Live</button>
+    <button class="btn-mini">History</button>
+    <button class="btn-mini">⚙</button>
+  </div>
+</div>
+
+<!-- ═══════════════ MAIN APP ═══════════════ -->
+<div class="app">
+
+  <!-- ═══ LEFT: TRANSCRIPT FEED ═══ -->
+  <div class="feed-panel">
+    <div class="feed-header">
+      <div class="feed-title">Live Transmissions</div>
+      <div class="pill-row">
+        <span class="pill pill-all">All</span>
+        <span class="pill pill-twr c-twr" style="border-color:#1e3a7a">TWR</span>
+        <span class="pill pill-app c-app" style="border-color:#3a2010">APP</span>
+        <span class="pill pill-arr c-arr" style="border-color:#33280f">ARR</span>
+        <span class="pill pill-dep c-dep" style="border-color:#2a1650">DEP</span>
+        <span class="pill pill-gnd c-gnd" style="border-color:#252525">GND</span>
+        <span class="pill pill-emer c-emer" style="border-color:#3d1010">EMER</span>
+        <span class="pill c-info" style="background:#040e16;border:1px solid #082030">INFO</span>
+      </div>
+    </div>
+
+    <div class="feed-scroll">
+
+      <!-- TRANSMISSION: fresh/newest -->
+      <div class="tx-card fresh" data-type="twr">
+        <div class="tx-stripe bg-twr"></div>
+        <div class="tx-time">
+          <div class="tx-time-main">13:28:32</div>
+          <div class="tx-time-dur">4.2s</div>
+        </div>
+        <div class="tx-freq">
+          <div class="tx-freq-mhz">118.600</div>
+          <div class="tx-freq-tag">
+            <span class="tx-freq-badge c-twr" style="background:#0d1e40;border:1px solid #1e3a7a">TWR</span>
+          </div>
+          <div class="tx-freq-name">EBBR TWR</div>
+        </div>
+        <div class="tx-text">
+          <div class="tx-speech">BAW456 runway 25R cleared for takeoff, wind 250 degrees 12 knots.</div>
+          <div class="tx-meta">
+            <span class="tx-badge badge-dg">Deepgram</span>
+            <div class="conf-bar">
+              <div class="conf-seg on"></div><div class="conf-seg on"></div>
+              <div class="conf-seg on"></div><div class="conf-seg on"></div>
+              <div class="conf-seg on"></div><div class="conf-seg on"></div>
+              <div class="conf-seg on"></div><div class="conf-seg on"></div>
+              <div class="conf-seg on"></div><div class="conf-seg"></div>
+            </div>
+            <span style="font-size:10px;color:var(--text-lo)">BAW456 likely transmitter</span>
+          </div>
+        </div>
+        <div class="tx-actions">
+          <div class="tx-new"></div>
+          <button class="btn-play">▶</button>
+          <button class="btn-map">radar</button>
+        </div>
+      </div>
+
+      <!-- TRANSMISSION: approach -->
+      <div class="tx-card" data-type="app">
+        <div class="tx-stripe bg-app"></div>
+        <div class="tx-time">
+          <div class="tx-time-main">13:27:11</div>
+          <div class="tx-time-dur">6.8s</div>
+        </div>
+        <div class="tx-freq">
+          <div class="tx-freq-mhz">128.800</div>
+          <div class="tx-freq-tag">
+            <span class="tx-freq-badge c-app" style="background:#1e0e04;border:1px solid #3a2010">APP</span>
+          </div>
+          <div class="tx-freq-name">EBBR APP</div>
+        </div>
+        <div class="tx-text">
+          <div class="tx-speech">Speedbird 94 delta Quebec with you, passing flight level 210, information Papa.</div>
+          <div class="tx-meta">
+            <span class="tx-badge badge-dg">Deepgram</span>
+            <div class="conf-bar">
+              <div class="conf-seg on"></div><div class="conf-seg on"></div>
+              <div class="conf-seg on"></div><div class="conf-seg on"></div>
+              <div class="conf-seg on"></div><div class="conf-seg on"></div>
+              <div class="conf-seg on"></div><div class="conf-seg on"></div>
+              <div class="conf-seg"></div><div class="conf-seg"></div>
+            </div>
+          </div>
+        </div>
+        <div class="tx-actions">
+          <button class="btn-play">▶</button>
+          <button class="btn-map">radar</button>
+        </div>
+      </div>
+
+      <!-- TRANSMISSION: TWR short -->
+      <div class="tx-card" data-type="twr">
+        <div class="tx-stripe bg-twr"></div>
+        <div class="tx-time">
+          <div class="tx-time-main">13:26:55</div>
+          <div class="tx-time-dur">2.1s</div>
+        </div>
+        <div class="tx-freq">
+          <div class="tx-freq-mhz">119.700</div>
+          <div class="tx-freq-tag">
+            <span class="tx-freq-badge c-twr" style="background:#0d1e40;border:1px solid #1e3a7a">TWR</span>
+          </div>
+          <div class="tx-freq-name">EBAW TWR</div>
+        </div>
+        <div class="tx-text">
+          <div class="tx-speech">OO-SQR, runway 19, cleared for takeoff.</div>
+          <div class="tx-meta">
+            <span class="tx-badge badge-dg">Deepgram</span>
+            <div class="conf-bar">
+              <div class="conf-seg on"></div><div class="conf-seg on"></div>
+              <div class="conf-seg on"></div><div class="conf-seg on"></div>
+              <div class="conf-seg on"></div><div class="conf-seg on"></div>
+              <div class="conf-seg on"></div><div class="conf-seg on"></div>
+              <div class="conf-seg on"></div><div class="conf-seg on"></div>
+            </div>
+          </div>
+        </div>
+        <div class="tx-actions">
+          <button class="btn-play">▶</button>
+          <button class="btn-map">radar</button>
+        </div>
+      </div>
+
+      <!-- TRANSMISSION: DEP -->
+      <div class="tx-card" data-type="dep">
+        <div class="tx-stripe bg-dep"></div>
+        <div class="tx-time">
+          <div class="tx-time-main">13:25:40</div>
+          <div class="tx-time-dur">3.5s</div>
+        </div>
+        <div class="tx-freq">
+          <div class="tx-freq-mhz">126.630</div>
+          <div class="tx-freq-tag">
+            <span class="tx-freq-badge c-dep" style="background:#18082e;border:1px solid #2a1650">DEP</span>
+          </div>
+          <div class="tx-freq-name">EBBR DEP</div>
+        </div>
+        <div class="tx-text">
+          <div class="tx-speech">Wizz 5247, climb flight level 150, direct HELEN.</div>
+          <div class="tx-meta">
+            <span class="tx-badge badge-dg">Deepgram</span>
+            <div class="conf-bar">
+              <div class="conf-seg on"></div><div class="conf-seg on"></div>
+              <div class="conf-seg on"></div><div class="conf-seg on"></div>
+              <div class="conf-seg on"></div><div class="conf-seg on"></div>
+              <div class="conf-seg"></div><div class="conf-seg"></div>
+              <div class="conf-seg"></div><div class="conf-seg"></div>
+            </div>
+          </div>
+        </div>
+        <div class="tx-actions">
+          <button class="btn-play">▶</button>
+          <button class="btn-map">radar</button>
+        </div>
+      </div>
+
+      <!-- TRANSMISSION: no speech -->
+      <div class="tx-card" data-type="">
+        <div class="tx-stripe" style="background:var(--border)"></div>
+        <div class="tx-time">
+          <div class="tx-time-main">13:25:02</div>
+          <div class="tx-time-dur">1.4s</div>
+        </div>
+        <div class="tx-freq">
+          <div class="tx-freq-mhz">132.480</div>
+          <div class="tx-freq-tag">
+            <span class="tx-freq-badge" style="background:var(--bg-lift);color:var(--text-lo);border:1px solid var(--border)">—</span>
+          </div>
+          <div class="tx-freq-name">EBBR ARR ATIS</div>
+        </div>
+        <div class="tx-text">
+          <div class="tx-speech empty">No speech detected</div>
+          <div class="tx-meta">
+            <span class="tx-badge badge-ns">No Speech</span>
+          </div>
+        </div>
+        <div class="tx-actions">
+          <button class="btn-play">▶</button>
+          <button class="btn-map">radar</button>
+        </div>
+      </div>
+
+      <!-- TRANSMISSION: ARR -->
+      <div class="tx-card" data-type="arr">
+        <div class="tx-stripe bg-arr"></div>
+        <div class="tx-time">
+          <div class="tx-time-main">13:24:18</div>
+          <div class="tx-time-dur">5.1s</div>
+        </div>
+        <div class="tx-freq">
+          <div class="tx-freq-mhz">118.250</div>
+          <div class="tx-freq-tag">
+            <span class="tx-freq-badge c-arr" style="background:#1a1400;border:1px solid #33280f">ARR</span>
+          </div>
+          <div class="tx-freq-name">EBBR ARR</div>
+        </div>
+        <div class="tx-text">
+          <div class="tx-speech">Ryanair 3008 roger, descend to 3000 feet QNH 1018, expect ILS 25L.</div>
+          <div class="tx-meta">
+            <span class="tx-badge badge-dg">Deepgram</span>
+            <div class="conf-bar">
+              <div class="conf-seg on"></div><div class="conf-seg on"></div>
+              <div class="conf-seg on"></div><div class="conf-seg on"></div>
+              <div class="conf-seg on"></div><div class="conf-seg on"></div>
+              <div class="conf-seg on"></div><div class="conf-seg on"></div>
+              <div class="conf-seg on"></div><div class="conf-seg"></div>
+            </div>
+          </div>
+        </div>
+        <div class="tx-actions">
+          <button class="btn-play">▶</button>
+          <button class="btn-map">radar</button>
+        </div>
+      </div>
+
+      <!-- TRANSMISSION: pending -->
+      <div class="tx-card" data-type="">
+        <div class="tx-stripe" style="background:var(--border)"></div>
+        <div class="tx-time">
+          <div class="tx-time-main">13:23:51</div>
+          <div class="tx-time-dur">2.8s</div>
+        </div>
+        <div class="tx-freq">
+          <div class="tx-freq-mhz">120.100</div>
+          <div class="tx-freq-tag">
+            <span class="tx-freq-badge c-arr" style="background:#1a1400;border:1px solid #33280f">ARR</span>
+          </div>
+          <div class="tx-freq-name">EBBR ARR</div>
+        </div>
+        <div class="tx-text">
+          <div class="tx-speech empty">Pending transcription…</div>
+          <div class="tx-meta">
+            <span class="tx-badge badge-pd">Pending</span>
+          </div>
+        </div>
+        <div class="tx-actions">
+          <button class="btn-play">▶</button>
+          <button class="btn-map">radar</button>
+        </div>
+      </div>
+
+      <!-- more rows fade out to simulate scroll -->
+      <div style="padding:20px;text-align:center;color:var(--text-lo);font-size:11px">
+        ↑ 4,814 older transmissions · <span style="color:var(--yellow)">load more</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ RIGHT: ADS-B PANEL ═══ -->
+  <div class="adsb-panel">
+    <div class="panel-header">
+      <div class="panel-title">ADS-B Traffic · 100km</div>
+      <div class="panel-live"><div class="dot dot-green"></div>LIVE · 23 AC</div>
+    </div>
+
+    <!-- Radar SVG -->
+    <div class="radar-wrap">
+      <svg viewBox="0 0 360 280" xmlns="http://www.w3.org/2000/svg">
+        <!-- Grid rings -->
+        <circle cx="180" cy="140" r="130" fill="none" stroke="#12122a" stroke-width="1"/>
+        <circle cx="180" cy="140" r="87" fill="none" stroke="#10102a" stroke-width="1"/>
+        <circle cx="180" cy="140" r="44" fill="none" stroke="#0e0e28" stroke-width="1"/>
+        <!-- Crosshairs -->
+        <line x1="180" y1="10" x2="180" y2="270" stroke="#0e0e28" stroke-width="1"/>
+        <line x1="50" y1="140" x2="310" y2="140" stroke="#0e0e28" stroke-width="1"/>
+        <!-- Range labels -->
+        <text x="184" y="100" fill="#1a1a3a" font-size="8" font-family="monospace">50km</text>
+        <text x="184" y="57" fill="#1a1a3a" font-size="8" font-family="monospace">75km</text>
+        <!-- EBBR cross -->
+        <line x1="195" y1="135" x2="210" y2="135" stroke="#3b82f6" stroke-width="2.5" stroke-linecap="round"/>
+        <line x1="202" y1="128" x2="202" y2="142" stroke="#3b82f6" stroke-width="2.5" stroke-linecap="round"/>
+        <circle cx="202" cy="135" r="2.5" fill="#3b82f6"/>
+        <text x="213" y="131" fill="#3b82f6" font-size="8" font-family="monospace" font-weight="bold">EBBR</text>
+        <!-- EBAW cross (center) -->
+        <line x1="168" y1="140" x2="192" y2="140" stroke="#22c55e" stroke-width="3" stroke-linecap="round"/>
+        <line x1="180" y1="128" x2="180" y2="152" stroke="#22c55e" stroke-width="3" stroke-linecap="round"/>
+        <circle cx="180" cy="140" r="4" fill="#22c55e"/>
+        <text x="186" y="126" fill="#22c55e" font-size="9" font-family="monospace" font-weight="bold">EBAW</text>
+
+        <!-- Aircraft - BAW456 (highlighted/linked to transcript) -->
+        <circle cx="205" cy="105" r="18" fill="none" stroke="#f5c518" stroke-width="1" opacity=".25"/>
+        <circle cx="205" cy="105" r="12" fill="none" stroke="#f5c518" stroke-width="1.5" opacity=".5"/>
+        <g transform="translate(205,105) rotate(250)">
+          <polygon points="0,-8 4,5 0,2 -4,5" fill="#f5c518" stroke="#050508" stroke-width="1"/>
+        </g>
+        <text x="214" y="101" fill="#f5c518" font-size="8" font-family="monospace" font-weight="bold">BAW456</text>
+        <text x="214" y="110" fill="#f5c518" font-size="7" font-family="monospace">FL 010</text>
+
+        <!-- Aircraft - BEL -->
+        <g transform="translate(230,80) rotate(340)">
+          <polygon points="0,-8 4,5 0,2 -4,5" fill="#3b82f6" stroke="#050508" stroke-width="1"/>
+        </g>
+        <text x="236" y="77" fill="#3b82f6" font-size="7" font-family="monospace">BEL</text>
+
+        <!-- Aircraft - RYR3008 (linked) -->
+        <circle cx="155" cy="75" r="12" fill="none" stroke="#f59e0b" stroke-width="1" opacity=".4"/>
+        <g transform="translate(155,75) rotate(150)">
+          <polygon points="0,-8 4,5 0,2 -4,5" fill="#f59e0b" stroke="#050508" stroke-width="1"/>
+        </g>
+        <text x="130" y="72" fill="#f59e0b" font-size="7" font-family="monospace">RYR3008</text>
+
+        <!-- More aircraft -->
+        <g transform="translate(260,160) rotate(20)">
+          <polygon points="0,-7 3,4 0,2 -3,4" fill="#3080ff" stroke="#050508" stroke-width="1"/>
+        </g>
+        <text x="264" y="157" fill="#3080ff" font-size="7" font-family="monospace">EZY</text>
+
+        <g transform="translate(120,170) rotate(80)">
+          <polygon points="0,-7 3,4 0,2 -3,4" fill="#3080ff" stroke="#050508" stroke-width="1"/>
+        </g>
+
+        <g transform="translate(280,110) rotate(290)">
+          <polygon points="0,-7 3,4 0,2 -3,4" fill="#52525b" stroke="#050508" stroke-width="1"/>
+        </g>
+        <g transform="translate(100,100) rotate(200)">
+          <polygon points="0,-7 3,4 0,2 -3,4" fill="#3080ff" stroke="#050508" stroke-width="1"/>
+        </g>
+        <g transform="translate(240,200) rotate(10)">
+          <polygon points="0,-7 3,4 0,2 -3,4" fill="#fb2c36" stroke="#050508" stroke-width="1"/>
+        </g>
+        <g transform="translate(160,190) rotate(300)">
+          <polygon points="0,-7 3,4 0,2 -3,4" fill="#3080ff" stroke="#050508" stroke-width="1"/>
+        </g>
+
+        <!-- Sweep animation hint -->
+        <path d="M 180 140 L 180 10 A 130 130 0 0 1 310 140 Z"
+              fill="url(#sweep)" opacity=".03">
+          <animateTransform attributeName="transform"
+            type="rotate" from="0 180 140" to="360 180 140"
+            dur="6s" repeatCount="indefinite"/>
+        </path>
+        <defs>
+          <radialGradient id="sweep" cx="0%" cy="50%">
+            <stop offset="0%" stop-color="#22d3ee" stop-opacity=".8"/>
+            <stop offset="100%" stop-color="#22d3ee" stop-opacity="0"/>
+          </radialGradient>
+        </defs>
+
+        <!-- Legend -->
+        <circle cx="56" cy="267" r="3.5" fill="#f5c518"/>
+        <text x="63" y="271" fill="#f5c518" font-size="7" font-family="monospace">on freq</text>
+        <circle cx="110" cy="267" r="3.5" fill="#3b82f6"/>
+        <text x="117" y="271" fill="#52525b" font-size="7" font-family="monospace">&lt;FL280</text>
+        <circle cx="155" cy="267" r="3.5" fill="#fb2c36"/>
+        <text x="162" y="271" fill="#52525b" font-size="7" font-family="monospace">&lt;3kft</text>
+      </svg>
+    </div>
+
+    <!-- Aircraft list -->
+    <div class="ac-list">
+
+      <div class="ac-row ac-linked">
+        <div class="ac-dot" style="background:var(--yellow)"></div>
+        <div class="ac-info">
+          <div class="ac-flight">BAW456</div>
+          <div class="ac-detail">British Airways · 118.600 MHz</div>
+          <div><span class="ac-tx-badge">on freq</span></div>
+        </div>
+        <div class="ac-right">
+          <div class="ac-alt">1,200 ft</div>
+          <div class="ac-gs">142 kt · 6.2km</div>
+        </div>
+      </div>
+
+      <div class="ac-row ac-linked">
+        <div class="ac-dot" style="background:#f59e0b"></div>
+        <div class="ac-info">
+          <div class="ac-flight">RYR3008</div>
+          <div class="ac-detail">Ryanair · 118.250 MHz</div>
+          <div><span class="ac-tx-badge" style="background:var(--cyan);color:#000">on freq</span></div>
+        </div>
+        <div class="ac-right">
+          <div class="ac-alt">8,400 ft</div>
+          <div class="ac-gs">280 kt · 18.4km</div>
+        </div>
+      </div>
+
+      <div class="ac-row">
+        <div class="ac-dot" style="background:var(--blue)"></div>
+        <div class="ac-info">
+          <div class="ac-flight">EZY1234</div>
+          <div class="ac-detail">easyJet · A320</div>
+        </div>
+        <div class="ac-right">
+          <div class="ac-alt">FL240</div>
+          <div class="ac-gs">435 kt · 34.1km</div>
+        </div>
+      </div>
+
+      <div class="ac-row">
+        <div class="ac-dot" style="background:var(--blue)"></div>
+        <div class="ac-info">
+          <div class="ac-flight">BEL321</div>
+          <div class="ac-detail">Brussels Airlines · A319</div>
+        </div>
+        <div class="ac-right">
+          <div class="ac-alt">FL180</div>
+          <div class="ac-gs">380 kt · 28km</div>
+        </div>
+      </div>
+
+      <div class="ac-row">
+        <div class="ac-dot" style="background:var(--red)"></div>
+        <div class="ac-info">
+          <div class="ac-flight">OO-SQR</div>
+          <div class="ac-detail">Private · C172</div>
+        </div>
+        <div class="ac-right">
+          <div class="ac-alt">2,400 ft</div>
+          <div class="ac-gs">105 kt · 3.1km</div>
+        </div>
+      </div>
+
+      <div class="ac-row">
+        <div class="ac-dot" style="background:var(--blue)"></div>
+        <div class="ac-info">
+          <div class="ac-flight">WZZ5247</div>
+          <div class="ac-detail">Wizz Air · A321</div>
+        </div>
+        <div class="ac-right">
+          <div class="ac-alt">FL150</div>
+          <div class="ac-gs">352 kt · 22km</div>
+        </div>
+      </div>
+
+      <div style="padding:6px 14px;font-size:10px;color:var(--text-lo);border-top:1px solid var(--border)">
+        + 17 more aircraft within 100km
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ BOTTOM: ANALYTICS STRIP ═══ -->
+  <div class="analytics-strip">
+
+    <!-- Freq activity bars -->
+    <div class="analytics-block">
+      <div class="ab-title">Transmission Activity · All Time</div>
+      <div class="freq-bar-row">
+        <div class="freq-bar-label c-twr">EBBR TWR</div>
+        <div class="freq-bar-track"><div class="freq-bar-fill bg-twr" style="width:88%"></div></div>
+        <div class="freq-bar-count">1,241</div>
+      </div>
+      <div class="freq-bar-row">
+        <div class="freq-bar-label c-app">EBBR APP</div>
+        <div class="freq-bar-track"><div class="freq-bar-fill bg-app" style="width:72%"></div></div>
+        <div class="freq-bar-count">976</div>
+      </div>
+      <div class="freq-bar-row">
+        <div class="freq-bar-label c-arr">EBBR ARR</div>
+        <div class="freq-bar-track"><div class="freq-bar-fill bg-arr" style="width:65%"></div></div>
+        <div class="freq-bar-count">854</div>
+      </div>
+      <div class="freq-bar-row">
+        <div class="freq-bar-label c-dep">EBBR DEP</div>
+        <div class="freq-bar-track"><div class="freq-bar-fill bg-dep" style="width:48%"></div></div>
+        <div class="freq-bar-count">622</div>
+      </div>
+      <div class="freq-bar-row">
+        <div class="freq-bar-label c-twr">EBAW TWR</div>
+        <div class="freq-bar-track"><div class="freq-bar-fill bg-twr" style="width:38%"></div></div>
+        <div class="freq-bar-count">490</div>
+      </div>
+      <div class="freq-bar-row">
+        <div class="freq-bar-label c-gnd">EBBR GND</div>
+        <div class="freq-bar-track"><div class="freq-bar-fill bg-gnd" style="width:22%"></div></div>
+        <div class="freq-bar-count">289</div>
+      </div>
+    </div>
+
+    <!-- Decoded speech donut -->
+    <div class="analytics-block">
+      <div class="ab-title">Decoded Speech · By Frequency</div>
+      <div class="donut-row">
+        <svg class="donut-svg" width="100" height="100" viewBox="0 0 100 100">
+          <!-- Background track -->
+          <circle cx="50" cy="50" r="35" fill="none" stroke="#1e1e38" stroke-width="14"/>
+          <!-- Slices: (circumference = 2π×35 ≈ 219.9) -->
+          <!-- EBBR TWR 35% -->
+          <circle cx="50" cy="50" r="35" fill="none" stroke="#3b82f6" stroke-width="14"
+            stroke-dasharray="77 220" stroke-dashoffset="0" transform="rotate(-90 50 50)"/>
+          <!-- EBBR APP 24% -->
+          <circle cx="50" cy="50" r="35" fill="none" stroke="#f97316" stroke-width="14"
+            stroke-dasharray="53 220" stroke-dashoffset="-77" transform="rotate(-90 50 50)"/>
+          <!-- EBBR ARR 18% -->
+          <circle cx="50" cy="50" r="35" fill="none" stroke="#f59e0b" stroke-width="14"
+            stroke-dasharray="40 220" stroke-dashoffset="-130" transform="rotate(-90 50 50)"/>
+          <!-- EBBR DEP 14% -->
+          <circle cx="50" cy="50" r="35" fill="none" stroke="#a855f7" stroke-width="14"
+            stroke-dasharray="31 220" stroke-dashoffset="-170" transform="rotate(-90 50 50)"/>
+          <!-- Other 9% -->
+          <circle cx="50" cy="50" r="35" fill="none" stroke="#3f3f6a" stroke-width="14"
+            stroke-dasharray="19 220" stroke-dashoffset="-201" transform="rotate(-90 50 50)"/>
+          <!-- Center text -->
+          <text x="50" y="47" text-anchor="middle" fill="#f0f0ff" font-size="14" font-weight="800" font-family="monospace">1,847</text>
+          <text x="50" y="57" text-anchor="middle" fill="#3a3a5a" font-size="6" letter-spacing="1" font-family="monospace">DECODED</text>
+        </svg>
+        <div class="donut-legend">
+          <div class="dl-item"><div class="dl-dot" style="background:var(--blue)"></div><div class="dl-label">EBBR TWR</div><div class="dl-pct">35%</div></div>
+          <div class="dl-item"><div class="dl-dot" style="background:var(--orange)"></div><div class="dl-label">EBBR APP</div><div class="dl-pct">24%</div></div>
+          <div class="dl-item"><div class="dl-dot" style="background:#f59e0b"></div><div class="dl-label">EBBR ARR</div><div class="dl-pct">18%</div></div>
+          <div class="dl-item"><div class="dl-dot" style="background:var(--purple)"></div><div class="dl-label">EBBR DEP</div><div class="dl-pct">14%</div></div>
+          <div class="dl-item"><div class="dl-dot" style="background:#3f3f6a"></div><div class="dl-label">Other</div><div class="dl-pct" style="color:var(--text-lo)">9%</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Signal quality / hourly activity sparkline -->
+    <div class="analytics-block">
+      <div class="ab-title">Hourly Transmissions · Last 24h</div>
+      <svg width="100%" height="130" viewBox="0 0 280 130" preserveAspectRatio="none">
+        <!-- Grid lines -->
+        <line x1="0" y1="100" x2="280" y2="100" stroke="#1e1e38" stroke-width="1"/>
+        <line x1="0" y1="67" x2="280" y2="67" stroke="#1e1e38" stroke-width="1"/>
+        <line x1="0" y1="33" x2="280" y2="33" stroke="#1e1e38" stroke-width="1"/>
+        <!-- Area fill -->
+        <defs>
+          <linearGradient id="sparkGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#f5c518" stop-opacity=".3"/>
+            <stop offset="100%" stop-color="#f5c518" stop-opacity="0"/>
+          </linearGradient>
+        </defs>
+        <path d="M0,90 L12,80 L23,75 L35,82 L47,70 L58,65 L70,60 L82,72 L93,58 L105,45 L117,30 L128,25 L140,35 L152,40 L163,30 L175,20 L187,15 L198,25 L210,18 L222,22 L233,30 L245,25 L257,20 L268,28 L280,100 L0,100 Z"
+          fill="url(#sparkGrad)"/>
+        <path d="M0,90 L12,80 L23,75 L35,82 L47,70 L58,65 L70,60 L82,72 L93,58 L105,45 L117,30 L128,25 L140,35 L152,40 L163,30 L175,20 L187,15 L198,25 L210,18 L222,22 L233,30 L245,25 L257,20 L268,28 L280,15"
+          fill="none" stroke="#f5c518" stroke-width="1.5"/>
+        <!-- Current time marker -->
+        <line x1="280" y1="0" x2="280" y2="115" stroke="#f5c518" stroke-width="1" stroke-dasharray="3,3" opacity=".4"/>
+        <!-- Hour labels -->
+        <text x="0" y="125" fill="#3a3a5a" font-size="8" font-family="monospace">00</text>
+        <text x="68" y="125" fill="#3a3a5a" font-size="8" font-family="monospace">06</text>
+        <text x="137" y="125" fill="#3a3a5a" font-size="8" font-family="monospace">12</text>
+        <text x="206" y="125" fill="#3a3a5a" font-size="8" font-family="monospace">18</text>
+        <text x="268" y="125" fill="#f5c518" font-size="8" font-family="monospace">now</text>
+      </svg>
+    </div>
+
+    <!-- KPI mini cards -->
+    <div class="kpi-block">
+      <div class="kpi-mini" style="--ka:var(--yellow)">
+        <div class="kpi-label">Uptime</div>
+        <div class="kpi-value kv-y">7d 3h</div>
+        <div class="kpi-sub">server running</div>
+      </div>
+      <div class="kpi-mini" style="--ka:var(--green)">
+        <div class="kpi-label">Aircraft</div>
+        <div class="kpi-value kv-g">23</div>
+        <div class="kpi-sub">w/ position now</div>
+      </div>
+      <div class="kpi-mini" style="--ka:var(--cyan)">
+        <div class="kpi-label">Deepgram</div>
+        <div class="kpi-value kv-c">142<span style="font-size:11px;color:var(--text-lo)">/500</span></div>
+        <div class="kpi-sub">358 remaining</div>
+      </div>
+      <div class="kpi-mini" style="--ka:var(--orange)">
+        <div class="kpi-label">Disk Free</div>
+        <div class="kpi-value kv-o">24.8<span style="font-size:11px;color:var(--text-lo)">GB</span></div>
+        <div class="kpi-sub">34% used</div>
+      </div>
+    </div>
+
+  </div><!-- /analytics-strip -->
+</div><!-- /app -->
+
+<!-- Design annotation overlay -->
+<div style="position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
+  background:rgba(5,5,8,.95);border:1px solid var(--border-hi);
+  border-radius:10px;padding:10px 18px;font-size:11px;color:var(--text-mid);
+  pointer-events:none;z-index:300;white-space:nowrap;
+  box-shadow:0 8px 32px rgba(0,0,0,.5)">
+  ✦ EBAW SDR Monitor · V2.0 Mockup · <span style="color:var(--yellow)">click elements to explore</span>
+</div>
+
+<script>
+// Interactive: clicking a tx-card highlights the linked aircraft
+document.querySelectorAll('.tx-card').forEach(card => {
+  card.addEventListener('click', () => {
+    document.querySelectorAll('.tx-card').forEach(c => c.style.outline = '');
+    card.style.outline = '1px solid var(--yellow)';
+  });
+});
+
+// Clock
+setInterval(() => {
+  // just for show - update if needed
+}, 1000);
+
+// Simulate new transmission arriving
+setTimeout(() => {
+  const feed = document.querySelector('.feed-scroll');
+  const newCard = document.createElement('div');
+  newCard.className = 'tx-card fresh';
+  newCard.setAttribute('data-type', 'dep');
+  newCard.innerHTML = `
+    <div class="tx-stripe bg-dep"></div>
+    <div class="tx-time">
+      <div class="tx-time-main">13:29:01</div>
+      <div class="tx-time-dur">3.1s</div>
+    </div>
+    <div class="tx-freq">
+      <div class="tx-freq-mhz">126.630</div>
+      <div class="tx-freq-tag">
+        <span class="tx-freq-badge c-dep" style="background:#18082e;border:1px solid #2a1650">DEP</span>
+      </div>
+      <div class="tx-freq-name">EBBR DEP</div>
+    </div>
+    <div class="tx-text">
+      <div class="tx-speech">EZY1234 turn left heading 180, climb flight level 120.</div>
+      <div class="tx-meta">
+        <span class="tx-badge badge-dg">Deepgram</span>
+        <div class="conf-bar">
+          <div class="conf-seg on"></div><div class="conf-seg on"></div>
+          <div class="conf-seg on"></div><div class="conf-seg on"></div>
+          <div class="conf-seg on"></div><div class="conf-seg on"></div>
+          <div class="conf-seg on"></div><div class="conf-seg"></div>
+          <div class="conf-seg"></div><div class="conf-seg"></div>
+        </div>
+      </div>
+    </div>
+    <div class="tx-actions">
+      <div class="tx-new"></div>
+      <button class="btn-play">▶</button>
+      <button class="btn-map">radar</button>
+    </div>
+  `;
+  feed.insertBefore(newCard, feed.firstChild.nextSibling);
+}, 4000);
+</script>
+</body>
+</html>

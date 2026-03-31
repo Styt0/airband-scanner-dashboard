@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Radar Mockup v3 – Tango Sierra</title>
+<style>
+/* ── Variables ── */
+:root {
+  --bg-void:#060810;--bg-deep:#0b0d16;--bg-panel:#0f1120;--bg-card:#141628;
+  --bg-lift:#1a1e34;--border:#1e2240;--border-hi:#2a3060;
+  --text-hi:#e8eaf2;--text-mid:#8890b0;--text-lo:#50587a;
+  --accent:#00d4aa;--accent2:#4488ff;--gold:#d4a800;
+  --ctr:#d048e8;--tma:#2a6ccc;--river:#1e6ba8;
+  --rad:8px;--font:'JetBrains Mono','Fira Mono','Consolas',monospace;
+}
+html.light {
+  --bg-void:#f0f2f5;--bg-deep:#e4e8ee;--bg-panel:#f8f8fb;--bg-card:#eef0f4;
+  --bg-lift:#e4e6ec;--border:#c8cad4;--border-hi:#a8aabb;
+  --text-hi:#0c0c20;--text-mid:#50507a;--text-lo:#9090a8;
+}
+
+/* ── Reset ── */
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg-void);color:var(--text-hi);font-family:var(--font);
+  font-size:12px;height:100vh;display:flex;flex-direction:column;overflow:hidden}
+
+/* ── Header ── */
+#hdr{background:var(--bg-deep);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;padding:0 14px;height:40px;gap:12px;flex-shrink:0}
+.hdr-logo{font-size:13px;font-weight:700;color:var(--accent);letter-spacing:.08em;margin-right:4px}
+.hdr-sep{width:1px;height:20px;background:var(--border);margin:0 4px}
+.hdr-clocks{display:flex;gap:14px;align-items:center}
+.clock-group{display:flex;align-items:baseline;gap:5px}
+.clock-label{font-size:10px;font-weight:700;color:var(--text-lo);letter-spacing:.08em}
+.clock-val{font-size:13px;font-weight:600;color:var(--text-hi);letter-spacing:.06em}
+.clock-sub{font-size:10px;color:var(--text-lo);letter-spacing:.04em}  /* day + date */
+.hdr-right{margin-left:auto;display:flex;gap:8px;align-items:center}
+.btn-hdr{background:none;border:1px solid var(--border);color:var(--text-mid);
+  padding:3px 8px;border-radius:4px;cursor:pointer;font-family:var(--font);font-size:11px}
+.btn-hdr:hover{border-color:var(--border-hi);color:var(--text-hi)}
+.status-dot{width:7px;height:7px;border-radius:50%;background:#22cc66;box-shadow:0 0 6px #22cc66}
+
+/* ── Main layout ── */
+#main{flex:1;display:grid;grid-template-columns:1fr 300px;gap:0;overflow:hidden}
+
+/* ── Left column ── */
+#col-left{display:flex;flex-direction:column;gap:0;overflow:hidden;border-right:1px solid var(--border)}
+#radar-wrap{flex:1;display:flex;flex-direction:column;overflow:hidden;background:var(--bg-deep)}
+.panel-hdr{background:var(--bg-panel);border-bottom:1px solid var(--border);
+  padding:6px 12px;display:flex;align-items:center;gap:8px;flex-shrink:0}
+.panel-title{font-size:10px;font-weight:700;color:var(--text-mid);letter-spacing:.1em;text-transform:uppercase}
+.panel-badge{font-size:9px;background:var(--bg-lift);color:var(--accent);
+  border:1px solid var(--border-hi);padding:1px 6px;border-radius:3px}
+#radar-svg-wrap{flex:1;display:flex;align-items:center;justify-content:center;
+  padding:8px;overflow:hidden}
+#radar-svg-wrap svg{max-width:100%;max-height:100%;width:auto;height:auto}
+
+/* ── Aircraft list (right) ── */
+#col-right{display:flex;flex-direction:column;overflow:hidden;background:var(--bg-deep)}
+#ac-list-wrap{flex:1;overflow-y:auto;padding:4px 0}
+.ac-row{display:grid;grid-template-columns:68px 1fr auto;align-items:center;
+  gap:6px;padding:5px 10px;border-bottom:1px solid var(--border);cursor:pointer}
+.ac-row:hover{background:var(--bg-lift)}
+.ac-cs{font-size:12px;font-weight:700;color:var(--accent);letter-spacing:.04em}
+.ac-mid{display:flex;flex-direction:column;gap:1px}
+.ac-type{font-size:9px;font-weight:700;color:#94a3b8;background:var(--bg-lift);
+  border:1px solid var(--border);border-radius:3px;padding:1px 4px;width:fit-content}
+.ac-route{font-size:9px;color:var(--text-lo)}
+.ac-right{display:flex;flex-direction:column;align-items:flex-end;gap:2px}
+.ac-alt{font-size:11px;font-weight:600;color:var(--text-hi)}
+.ac-spd{font-size:9px;color:var(--text-lo)}
+.ac-arr{color:#f59e0b}
+.ac-dep{color:#34d399}
+.ac-ovr{color:var(--text-mid)}
+#stats-bar{background:var(--bg-panel);border-top:1px solid var(--border);
+  padding:8px 10px;display:flex;gap:14px;flex-shrink:0}
+.stat{display:flex;flex-direction:column;align-items:center;gap:1px}
+.stat-n{font-size:16px;font-weight:700;color:var(--text-hi)}
+.stat-l{font-size:9px;color:var(--text-lo);letter-spacing:.06em;text-transform:uppercase}
+
+/* ── Transmission strip (bottom) ── */
+#feed-bar{height:54px;background:var(--bg-panel);border-top:1px solid var(--border);
+  display:flex;align-items:center;gap:8px;padding:0 10px;overflow:hidden;flex-shrink:0}
+.tx-chip{background:var(--bg-card);border:1px solid var(--border);border-radius:5px;
+  padding:4px 8px;font-size:10px;color:var(--text-mid);white-space:nowrap;flex-shrink:0}
+.tx-chip .tx-cs{color:var(--text-hi);font-weight:700}
+.tx-chip .tx-t{font-size:9px;border-radius:2px;padding:1px 4px;margin-right:4px}
+.tx-twr{background:#1a2f4a;color:#60b0ff}
+.tx-app{background:#2a1f0a;color:#f0a040}
+.tx-dep{background:#1a0a2a;color:#c060e8}
+.feed-label{font-size:9px;color:var(--text-lo);letter-spacing:.08em;writing-mode:vertical-rl;
+  transform:rotate(180deg);flex-shrink:0}
+</style>
+</head>
+<body>
+
+<!-- ── Header ── -->
+<div id="hdr">
+  <span class="hdr-logo">◈ TANGO·SIERRA</span>
+  <div class="hdr-sep"></div>
+  <div class="hdr-clocks">
+    <div class="clock-group">
+      <span class="clock-label">LCL</span>
+      <span class="clock-val" id="lcl-val">--:--:--</span>
+    </div>
+    <div class="clock-group">
+      <span class="clock-label">ZULU</span>
+      <span class="clock-val" id="utc-val">--:--:--</span>
+    </div>
+    <div class="clock-group">
+      <span class="clock-label">DATE</span>
+      <span class="clock-val" id="date-val">--- -- --- ----</span>
+    </div>
+  </div>
+  <div class="hdr-right">
+    <div class="status-dot" title="SDR live"></div>
+    <button class="btn-hdr" id="themeBtn" onclick="toggleTheme()" title="Toggle dark/light">◐</button>
+  </div>
+</div>
+
+<!-- ── Main ── -->
+<div id="main">
+
+  <!-- Left: radar -->
+  <div id="col-left">
+    <div id="radar-wrap">
+      <div class="panel-hdr">
+        <span class="panel-title">ADS-B Traffic · EBAW · 20 km</span>
+        <span class="panel-badge" id="ac-count">6 AC</span>
+      </div>
+      <div id="radar-svg-wrap">
+        <svg id="rsvg" xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 520 520" width="520" height="520"
+          style="background:#060810;display:block;border-radius:4px">
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right: aircraft list -->
+  <div id="col-right">
+    <div class="panel-hdr">
+      <span class="panel-title">Aircraft</span>
+    </div>
+    <div id="ac-list-wrap"></div>
+    <div id="stats-bar">
+      <div class="stat"><span class="stat-n" id="s-arr">2</span><span class="stat-l">ARR</span></div>
+      <div class="stat"><span class="stat-n" id="s-dep">1</span><span class="stat-l">DEP</span></div>
+      <div class="stat"><span class="stat-n" id="s-ovr">3</span><span class="stat-l">OVR</span></div>
+      <div class="stat" style="margin-left:auto">
+        <span class="stat-n" style="color:var(--accent)" id="s-tot">6</span>
+        <span class="stat-l">TOTAL</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ── Feed strip ── -->
+<div id="feed-bar">
+  <span class="feed-label">LIVE</span>
+  <div class="tx-chip">
+    <span class="tx-t tx-twr">TWR</span>
+    <span class="tx-cs">BE-FLM</span>
+    <span> ready for departure runway 29</span>
+  </div>
+  <div class="tx-chip">
+    <span class="tx-t tx-app">APP</span>
+    <span class="tx-cs">BAW345</span>
+    <span> descend to 3000 QNH 1015</span>
+  </div>
+  <div class="tx-chip">
+    <span class="tx-t tx-dep">DEP</span>
+    <span class="tx-cs">EZY789</span>
+    <span> climb flight level 90 direct HELEN</span>
+  </div>
+  <div class="tx-chip">
+    <span class="tx-t tx-twr">TWR</span>
+    <span class="tx-cs">PHKZM</span>
+    <span> join left base runway 29 report final</span>
+  </div>
+</div>
+
+<script>
+/* ── Theme ── */
+(function(){if(localStorage.getItem('theme')==='light')document.documentElement.classList.add('light')})();
+function toggleTheme(){
+  var l=document.documentElement.classList.toggle('light');
+  localStorage.setItem('theme',l?'light':'dark');
+  var b=document.getElementById('themeBtn');
+  if(b)b.textContent=l?'●':'◐';
+  drawRadar();
+}
+
+/* ── Clocks ── */
+var DAYS=['SUN','MON','TUE','WED','THU','FRI','SAT'];
+var MONTHS=['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+function pad(n){return String(n).padStart(2,'0');}
+function updateClocks(){
+  var now=new Date();
+  var utc=new Date(now.getTime()+now.getTimezoneOffset()*60000);
+  document.getElementById('lcl-val').textContent=
+    pad(now.getHours())+':'+pad(now.getMinutes())+':'+pad(now.getSeconds());
+  document.getElementById('utc-val').textContent=
+    pad(utc.getHours())+':'+pad(utc.getMinutes())+':'+pad(utc.getSeconds());
+  var d=utc;
+  document.getElementById('date-val').textContent=
+    DAYS[d.getDay()]+' '+pad(d.getDate())+' '+MONTHS[d.getMonth()]+' '+d.getFullYear();
+}
+setInterval(updateClocks,1000);
+updateClocks();
+
+/* ── Radar geometry ── */
+var EBAW_LAT=51.1894, EBAW_LON=4.4603;
+var W=520,H=520,cx=260,cy=260,ppk=260/20;  // 13 px/km
+function xy(lat,lon){
+  var dx=(lon-EBAW_LON)*111.0*Math.cos(EBAW_LAT*Math.PI/180);
+  var dy=-(lat-EBAW_LAT)*111.0;
+  return[cx+dx*ppk, cy+dy*ppk];
+}
+
+/* ── Mock aircraft ── */
+var AC=[
+  {cs:'BAW345', type:'A320',lat:51.261,lon:4.572,alt:3000,spd:185,hdg:245,cat:'arr'},
+  {cs:'RYR4WY', type:'B738',lat:51.143,lon:4.522,alt:1500,spd:165,hdg:29, cat:'dep'},
+  {cs:'EZY789', type:'A319',lat:51.256,lon:4.369,alt:5000,spd:220,hdg:310,cat:'ovr'},
+  {cs:'VJT215', type:'B737',lat:51.193,lon:4.544,alt:4500,spd:210,hdg:270,cat:'ovr'},
+  {cs:'BEL12E', type:'A319',lat:51.187,lon:4.259,alt:6500,spd:240,hdg:95, cat:'arr'},
+  {cs:'PHKZM', type:'C172',lat:51.288,lon:4.462,alt:2000,spd:105,hdg:180,cat:'ovr'},
+];
+
+/* ── Waypoints ── */
+var WPS=[
+  {n:'KONTI',lat:51.12639,lon:4.42917},
+  {n:'RUPEL',lat:51.12056,lon:4.30833},
+  {n:'DUFFY',lat:51.08528,lon:4.49472},
+  {n:'WISKY',lat:51.08000,lon:4.36639},
+  {n:'PORTA',lat:51.23083,lon:4.44111},
+];
+
+/* ── Rivers ── */
+var SCHELDE=[
+  [51.38,4.25],[51.33,4.28],[51.29,4.31],[51.25,4.36],[51.22,4.40],
+  [51.19,4.40],[51.16,4.38],[51.13,4.38],[51.10,4.36],[51.07,4.32],[51.04,4.29]
+];
+var RUPEL=[
+  [51.10,4.56],[51.09,4.49],[51.08,4.43],[51.07,4.36],[51.07,4.32]
+];
+var KLEINE_NETE=[
+  [51.075,4.53],[51.078,4.48],[51.085,4.44]
+];
+
+function polyPts(arr){
+  return arr.map(function(p){
+    var c=xy(p[0],p[1]);return c[0].toFixed(1)+','+c[1].toFixed(1);
+  }).join(' ');
+}
+
+function fmtAlt(a){
+  if(a>=1000)return(a/100).toFixed(0)+'FL';
+  return a+'ft';
+}
+/* better alt display */
+function altLabel(a){
+  if(a>=18000)return'FL'+(a/100).toFixed(0);
+  if(a>=1000) return(a/100|0)+'00';
+  return a+'ft';
+}
+
+/* ── Draw radar SVG ── */
+function drawRadar(){
+  var light=document.documentElement.classList.contains('light');
+  var bgCol=  light?'#e8ecf4':'#060810';
+  var ringCol=light?'#c8ccdc':'#0c0c26';
+  var riverCol=light?'#3a8fd0':'#2068a8';
+  var gridCol=light?'rgba(0,0,0,0.08)':'rgba(255,255,255,0.025)';
+  var labelCol=light?'#707090':'#303860';
+  var wpCol='#d4a800';
+  var ctrCol='#d048e8';
+  var tmaCol=light?'rgba(40,100,220,0.12)':'rgba(40,100,220,0.10)';
+  var tmaBdr=light?'rgba(40,100,220,0.4)':'rgba(60,120,240,0.5)';
+  var acCyan='#00d4aa';
+  var svg=document.getElementById('rsvg');
+
+  var p=[];
+  p.push('<rect width="520" height="520" fill="'+bgCol+'"/>');
+
+  /* TMA zone — approx Brussels TMA sector covering northern approach */
+  var tmaR=17*ppk;
+  p.push('<circle cx="'+cx+'" cy="'+cy+'" r="'+tmaR.toFixed(1)+'"'+
+    ' fill="'+tmaCol+'" stroke="'+tmaBdr+'" stroke-width="1" stroke-dasharray="5,4"/>');
+  /* TMA label */
+  p.push('<text x="'+(cx-tmaR+6).toFixed(0)+'" y="'+(cy-4)+'"'+
+    ' fill="'+tmaBdr+'" font-size="8" font-family="monospace" font-weight="bold">EBBU TMA</text>');
+  p.push('<text x="'+(cx-tmaR+6).toFixed(0)+'" y="'+(cy+9)+'"'+
+    ' fill="'+tmaBdr+'" font-size="7" font-family="monospace" opacity="0.7">FL095 / 3500ft</text>');
+
+  /* Range rings */
+  [[5,'5km'],[10,'10km'],[20,'20km']].forEach(function(r){
+    var kr=r[0]*ppk;
+    p.push('<circle cx="'+cx+'" cy="'+cy+'" r="'+kr.toFixed(1)+'"'+
+      ' fill="none" stroke="'+ringCol+'" stroke-width="0.7"/>');
+    if(r[0]<20)
+      p.push('<text x="'+(cx+kr+3).toFixed(0)+'" y="'+(cy-3)+'"'+
+        ' fill="'+labelCol+'" font-size="7" font-family="monospace">'+r[1]+'</text>');
+  });
+
+  /* Compass cross-hairs */
+  p.push('<line x1="'+cx+'" y1="'+(cy-260)+'" x2="'+cx+'" y2="'+(cy+260)+'"'+
+    ' stroke="'+gridCol+'" stroke-width="0.5"/>');
+  p.push('<line x1="0" y1="'+cy+'" x2="520" y2="'+cy+'"'+
+    ' stroke="'+gridCol+'" stroke-width="0.5"/>');
+
+  /* CTR Antwerp — ~9km magenta dashed circle */
+  var ctrR=9*ppk;
+  p.push('<circle cx="'+cx+'" cy="'+cy+'" r="'+ctrR.toFixed(1)+'"'+
+    ' fill="none" stroke="'+ctrCol+'" stroke-width="1.4" stroke-dasharray="6,4" opacity="0.75"/>');
+  /* CTR label bottom-right */
+  var ctrLx=(cx+ctrR*0.68).toFixed(0), ctrLy=(cy+ctrR*0.72).toFixed(0);
+  p.push('<text x="'+ctrLx+'" y="'+ctrLy+'"'+
+    ' fill="'+ctrCol+'" font-size="8" font-family="monospace" font-weight="bold" opacity="0.8">EBAW CTR</text>');
+  p.push('<text x="'+ctrLx+'" y="'+(+ctrLy+10)+'"'+
+    ' fill="'+ctrCol+'" font-size="7" font-family="monospace" opacity="0.6">FL065 / SFC</text>');
+
+  /* Rivers */
+  [[SCHELDE,3.0],[RUPEL,2.0],[KLEINE_NETE,1.5]].forEach(function(rv){
+    p.push('<polyline points="'+polyPts(rv[0])+'"'+
+      ' fill="none" stroke="'+riverCol+'" stroke-width="'+rv[1]+'"'+
+      ' stroke-linecap="round" stroke-linejoin="round" opacity="0.75"/>');
+  });
+
+  /* EBAW airport symbol */
+  var asz=8;
+  p.push('<line x1="'+(cx-asz)+'" y1="'+cy+'" x2="'+(cx+asz)+'" y2="'+cy+'"'+
+    ' stroke="#ffffff" stroke-width="1.8" opacity="0.9"/>');
+  p.push('<line x1="'+cx+'" y1="'+(cy-asz)+'" x2="'+cx+'" y2="'+(cy+asz)+'"'+
+    ' stroke="#ffffff" stroke-width="1.8" opacity="0.9"/>');
+  p.push('<circle cx="'+cx+'" cy="'+cy+'" r="'+(asz+3)+'"'+
+    ' fill="none" stroke="#ffffff" stroke-width="0.7" opacity="0.5"/>');
+  p.push('<text x="'+(cx+14)+'" y="'+(cy+4)+'"'+
+    ' fill="#ffffff" font-size="8" font-family="monospace" font-weight="bold" opacity="0.8">EBAW</text>');
+
+  /* VFR Waypoints */
+  WPS.forEach(function(w){
+    var c=xy(w.lat,w.lon);
+    if(c[0]<2||c[0]>W-2||c[1]<2||c[1]>H-2)return;
+    var wx=c[0],wy=c[1],s=5;
+    p.push('<g opacity="0.55">');
+    p.push('<polygon points="'+wx.toFixed(0)+','+(wy-s).toFixed(0)+' '+
+      (wx-s).toFixed(0)+','+(wy+s).toFixed(0)+' '+
+      (wx+s).toFixed(0)+','+(wy+s).toFixed(0)+'"'+
+      ' fill="rgba(212,168,0,0.12)" stroke="'+wpCol+'" stroke-width="1.3"/>');
+    p.push('<text x="'+(wx+8).toFixed(0)+'" y="'+(wy+4).toFixed(0)+'"'+
+      ' fill="'+wpCol+'" font-size="7.5" font-family="monospace" font-weight="bold">'+w.n+'</text>');
+    p.push('</g>');
+  });
+
+  /* North indicator */
+  p.push('<text x="'+(cx-4)+'" y="18"'+
+    ' fill="'+labelCol+'" font-size="10" font-family="monospace" font-weight="bold">N</text>');
+  p.push('<line x1="'+cx+'" y1="22" x2="'+cx+'" y2="32"'+
+    ' stroke="'+labelCol+'" stroke-width="1.2"/>');
+
+  /* Aircraft */
+  AC.forEach(function(a){
+    var c=xy(a.lat,a.lon);
+    var ax=c[0],ay=c[1];
+    if(ax<2||ax>W-2||ay<2||ay>H-2)return;
+    var col=a.cat==='arr'?'#f59e0b':a.cat==='dep'?'#34d399':acCyan;
+    /* heading tick */
+    var hr=a.hdg*Math.PI/180;
+    var tx=ax+Math.sin(hr)*14, ty=ay-Math.cos(hr)*14;
+    p.push('<line x1="'+ax.toFixed(1)+'" y1="'+ay.toFixed(1)+'"'+
+      ' x2="'+tx.toFixed(1)+'" y2="'+ty.toFixed(1)+'"'+
+      ' stroke="'+col+'" stroke-width="1" opacity="0.6"/>');
+    /* dot */
+    p.push('<circle cx="'+ax.toFixed(1)+'" cy="'+ay.toFixed(1)+'" r="4"'+
+      ' fill="'+col+'" opacity="0.9"/>');
+    p.push('<circle cx="'+ax.toFixed(1)+'" cy="'+ay.toFixed(1)+'" r="7"'+
+      ' fill="none" stroke="'+col+'" stroke-width="0.7" opacity="0.4"/>');
+    /* label */
+    p.push('<text x="'+(ax+9).toFixed(1)+'" y="'+(ay-3).toFixed(1)+'"'+
+      ' fill="'+col+'" font-size="8.5" font-family="monospace" font-weight="bold">'+a.cs+'</text>');
+    p.push('<text x="'+(ax+9).toFixed(1)+'" y="'+(ay+7).toFixed(1)+'"'+
+      ' fill="'+col+'" font-size="7.5" font-family="monospace" opacity="0.7">'+altLabel(a.alt)+'</text>');
+  });
+
+  svg.innerHTML=p.join('');
+}
+
+/* ── Aircraft list ── */
+function buildAcList(){
+  var wrap=document.getElementById('ac-list-wrap');
+  var html='';
+  AC.forEach(function(a){
+    var col=a.cat==='arr'?'ac-arr':a.cat==='dep'?'ac-dep':'ac-ovr';
+    var altStr=a.alt>=1000?'FL'+(a.alt/100|0).toFixed(0):a.alt+'ft';
+    html+='<div class="ac-row">'+
+      '<span class="ac-cs '+col+'">'+a.cs+'</span>'+
+      '<div class="ac-mid">'+
+        '<span class="ac-type">'+a.type+'</span>'+
+        '<span class="ac-route">'+a.cat.toUpperCase()+'</span>'+
+      '</div>'+
+      '<div class="ac-right">'+
+        '<span class="ac-alt '+col+'">'+altStr+'</span>'+
+        '<span class="ac-spd">'+a.spd+'kt</span>'+
+      '</div>'+
+    '</div>';
+  });
+  wrap.innerHTML=html;
+}
+
+drawRadar();
+buildAcList();
+setInterval(drawRadar,2000);
+</script>
+</body>
+</html>
