@@ -650,6 +650,35 @@ def get_hourly_data():
     except:
         return [0] * 24
 
+def _icao_flag(hex_str):
+    """Return a flag emoji for a given ICAO 24-bit hex address."""
+    try:
+        n = int(hex_str, 16)
+        if 0x300000 <= n <= 0x33FFFF: return '🇮🇹'
+        if 0x340000 <= n <= 0x37FFFF: return '🇪🇸'
+        if 0x380000 <= n <= 0x3BFFFF: return '🇫🇷'
+        if 0x3C0000 <= n <= 0x3FFFFF: return '🇩🇪'
+        if 0x400000 <= n <= 0x43FFFF: return '🇬🇧'
+        if 0x440000 <= n <= 0x447FFF: return '🇦🇹'
+        if 0x448000 <= n <= 0x44FFFF: return '🇧🇪'
+        if 0x450000 <= n <= 0x457FFF: return '🇧🇬'
+        if 0x458000 <= n <= 0x45FFFF: return '🇩🇰'
+        if 0x460000 <= n <= 0x467FFF: return '🇫🇮'
+        if 0x468000 <= n <= 0x46FFFF: return '🇬🇷'
+        if 0x470000 <= n <= 0x477FFF: return '🇭🇺'
+        if 0x480000 <= n <= 0x487FFF: return '🇳🇱'
+        if 0x488000 <= n <= 0x48FFFF: return '🇨🇭'
+        if 0x490000 <= n <= 0x497FFF: return '🇨🇿'
+        if 0x498000 <= n <= 0x49FFFF: return '🇵🇱'
+        if 0x4A8000 <= n <= 0x4AFFFF: return '🇸🇪'
+        if 0x4B0000 <= n <= 0x4B7FFF: return '🇳🇴'
+        if 0x700000 <= n <= 0x73FFFF: return '🇦🇪'
+        if 0xA00000 <= n <= 0xAFFFFF: return '🇺🇸'
+    except Exception:
+        pass
+    return ''
+
+
 def get_aircraft_list():
     if not _ureq: return []
     try:
@@ -665,16 +694,19 @@ def get_aircraft_list():
             if dist > 150: continue
             alt = ac.get('alt_baro')
             result.append({
-                'hex':    ac.get('hex', ''),
-                'flight': (ac.get('flight') or '').strip(),
-                't':      (ac.get('t') or '').strip(),
-                'alt':    alt,
-                'gs':     ac.get('gs'),
-                'track':  ac.get('track'),
-                'dist_km': dist,
+                'hex':      ac.get('hex', ''),
+                'flight':   (ac.get('flight') or '').strip(),
+                't':        (ac.get('t') or '').strip(),
+                'squawk':   ac.get('squawk', ''),
+                'r':        (ac.get('r') or '').strip(),
+                'alt':      alt,
+                'gs':       ac.get('gs'),
+                'track':    ac.get('track'),
+                'dist_km':  dist,
+                'dist_nmi': round(dist / 1.852, 1),
             })
         result.sort(key=lambda a: a['dist_km'])
-        return result[:20]
+        return result[:30]
     except:
         return []
 
@@ -1318,26 +1350,40 @@ audio{height:24px;margin-left:4px;vertical-align:middle}
 .panel-live{display:flex;align-items:center;gap:5px;font-size:9px;
   font-weight:700;color:var(--green);letter-spacing:.08em}
 .radar-wrap{flex-shrink:0;border-bottom:1px solid var(--border);
-  background:#05050a;overflow:hidden;line-height:0}
-.radar-wrap img,.radar-wrap svg{width:100%;display:block}
+  background:#05050a;overflow:hidden;height:360px}
+.radar-wrap iframe{width:100%;height:100%;border:none;display:block}
 .ac-list{flex:1;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--border) transparent}
 .ac-list::-webkit-scrollbar{width:3px}
 .ac-list::-webkit-scrollbar-thumb{background:var(--border-hi);border-radius:3px}
-.ac-row{display:grid;grid-template-columns:9px 1fr auto;align-items:center;gap:8px;
-  padding:6px 14px;border-bottom:1px solid var(--border);transition:background .1s;cursor:default}
+.ac-hdr,.ac-row{display:grid;
+  grid-template-columns:22px 64px 1fr 36px 44px 62px 42px 46px;
+  align-items:center;column-gap:0;padding:4px 10px;border-bottom:1px solid var(--border)}
+.ac-hdr{background:var(--bg-deep);position:sticky;top:0;z-index:1}
+.ac-hdr span{font-size:7.5px;font-weight:800;letter-spacing:.12em;color:var(--text-lo);
+  text-transform:uppercase;text-align:right;padding:0 2px;white-space:nowrap}
+.ac-hdr span:nth-child(-n+3){text-align:left}
+.ac-row{transition:background .1s;cursor:default}
 .ac-row:hover{background:var(--bg-lift)}
 .ac-linked{background:#080f1a}.ac-linked:hover{background:#0e1828}
-.ac-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
-.ac-flight{font-size:12px;font-weight:700;color:var(--text-hi);font-family:ui-monospace,monospace;display:flex;align-items:center;gap:5px}
+.ac-flag{font-size:13px;line-height:1}
+.ac-flight{font-size:11px;font-weight:700;color:var(--text-hi);
+  font-family:ui-monospace,monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ac-route{font-size:9px;color:var(--text-mid);font-family:ui-monospace,monospace;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:4px}
 .ac-type{font-size:8px;font-weight:700;color:#94a3b8;background:var(--bg-lift);
-  border:1px solid var(--border);border-radius:3px;padding:1px 4px;letter-spacing:.04em;flex-shrink:0}
-.ac-detail{font-size:9.5px;color:var(--text-mid)}
+  border:1px solid var(--border);border-radius:3px;padding:1px 3px;letter-spacing:.04em;
+  text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ac-sqk{font-size:9.5px;font-family:ui-monospace,monospace;color:var(--text-mid);
+  text-align:right;padding-right:2px}
+.ac-alt{font-size:10px;font-weight:700;font-family:ui-monospace,monospace;
+  text-align:right;padding-right:2px}
+.ac-gs{font-size:9.5px;font-family:ui-monospace,monospace;color:var(--text-mid);
+  text-align:right;padding-right:2px}
+.ac-dist{font-size:9.5px;font-family:ui-monospace,monospace;color:var(--text-mid);
+  text-align:right}
 .ac-freq-tag{display:inline-block;font-size:8px;font-weight:700;padding:1px 5px;
   border-radius:3px;margin-top:2px;letter-spacing:.05em}
-.ac-alt{font-size:11px;font-weight:700;font-family:ui-monospace,monospace;
-  color:var(--text-hi);text-align:right}
-.ac-gs{font-size:9.5px;color:var(--text-mid);text-align:right}
-.ac-more{padding:5px 14px;font-size:9.5px;color:var(--text-lo);
+.ac-more{padding:5px 10px;font-size:9.5px;color:var(--text-lo);
   border-top:1px solid var(--border)}
 
 /* ── ANALYTICS STRIP ── */
@@ -1498,17 +1544,6 @@ function toggleTheme(){
     applyFilters();
   };
 
-  // ── Radar refresh ─────────────────────────────────────────────────────────
-  function refreshRadar(){
-    fetch('/radar.svg?t='+Date.now())
-      .then(function(r){ return r.text(); })
-      .then(function(svg){
-        var wrap = document.getElementById('radarWrap');
-        if(wrap) wrap.innerHTML = svg;
-      }).catch(function(){});
-  }
-  setInterval(refreshRadar, 30000);
-
   // ── Aircraft list refresh ─────────────────────────────────────────────────
   function altColor(alt){
     if(alt===null||alt===undefined) return '#71717a';
@@ -1518,10 +1553,35 @@ function toggleTheme(){
     return '#52525b';
   }
   function fmtAlt(alt){
-    if(alt===null||alt===undefined) return '—';
-    var m = Math.round(alt * 0.3048);
-    if(m >= 1000) return (m/1000).toFixed(1)+' km';
-    return m+' m';
+    if(alt===null||alt===undefined) return '\u2014';
+    if(alt>=10000) return 'FL'+String(Math.round(alt/100)).padStart(3,'0');
+    return alt.toLocaleString()+'ft';
+  }
+  function hexFlag(hex){
+    try{
+      var n=parseInt(hex,16);
+      if(n>=0x300000&&n<=0x33FFFF) return '\uD83C\uDDEE\uD83C\uDDF9'; // IT
+      if(n>=0x340000&&n<=0x37FFFF) return '\uD83C\uDDEA\uD83C\uDDF8'; // ES
+      if(n>=0x380000&&n<=0x3BFFFF) return '\uD83C\uDDEB\uD83C\uDDF7'; // FR
+      if(n>=0x3C0000&&n<=0x3FFFFF) return '\uD83C\uDDE9\uD83C\uDDEA'; // DE
+      if(n>=0x400000&&n<=0x43FFFF) return '\uD83C\uDDEC\uD83C\uDDE7'; // GB
+      if(n>=0x440000&&n<=0x447FFF) return '\uD83C\uDDE6\uD83C\uDDF9'; // AT
+      if(n>=0x448000&&n<=0x44FFFF) return '\uD83C\uDDE7\uD83C\uDDEA'; // BE
+      if(n>=0x450000&&n<=0x457FFF) return '\uD83C\uDDE7\uD83C\uDDEC'; // BG
+      if(n>=0x458000&&n<=0x45FFFF) return '\uD83C\uDDE9\uD83C\uDDF0'; // DK
+      if(n>=0x460000&&n<=0x467FFF) return '\uD83C\uDDEB\uD83C\uDDEE'; // FI
+      if(n>=0x468000&&n<=0x46FFFF) return '\uD83C\uDDEC\uD83C\uDDF7'; // GR
+      if(n>=0x470000&&n<=0x477FFF) return '\uD83C\uDDED\uD83C\uDDFA'; // HU
+      if(n>=0x480000&&n<=0x487FFF) return '\uD83C\uDDF3\uD83C\uDDF1'; // NL
+      if(n>=0x488000&&n<=0x48FFFF) return '\uD83C\uDDE8\uD83C\uDDED'; // CH
+      if(n>=0x490000&&n<=0x497FFF) return '\uD83C\uDDE8\uD83C\uDDFF'; // CZ
+      if(n>=0x498000&&n<=0x49FFFF) return '\uD83C\uDDF5\uD83C\uDDF1'; // PL
+      if(n>=0x4A8000&&n<=0x4AFFFF) return '\uD83C\uDDF8\uD83C\uDDEA'; // SE
+      if(n>=0x4B0000&&n<=0x4B7FFF) return '\uD83C\uDDF3\uD83C\uDDF4'; // NO
+      if(n>=0x700000&&n<=0x73FFFF) return '\uD83C\uDDE6\uD83C\uDDEA'; // AE
+      if(n>=0xA00000&&n<=0xAFFFFF) return '\uD83C\uDDFA\uD83C\uDDF8'; // US
+    }catch(e){}
+    return '';
   }
   function renderAcList(aircraft){
     var el = document.getElementById('acList');
@@ -1529,20 +1589,30 @@ function toggleTheme(){
     if(!aircraft||!aircraft.length){
       el.innerHTML='<div class="ac-more">No aircraft data</div>'; return;
     }
-    var html='';
-    aircraft.slice(0,15).forEach(function(ac){
-      var color=altColor(ac.alt);
+    var html='<div class="ac-hdr">'
+      +'<span></span>'
+      +'<span style="text-align:left">CALLSIGN</span>'
+      +'<span style="text-align:left">ROUTE</span>'
+      +'<span>TYPE</span><span>SQWK</span><span>ALT ft</span>'
+      +'<span>SPD kt</span><span>DIST</span>'
+      +'</div>';
+    aircraft.slice(0,30).forEach(function(ac){
+      var altCol=altColor(ac.alt);
       var flight=ac.flight||ac.hex||'?';
-      var typeTag=ac.t?'<span class="ac-type">'+ac.t+'</span>':'';
+      var spd=ac.gs?Math.round(ac.gs):'';
+      var dist=ac.dist_nmi?ac.dist_nmi+'nm':'';
       html+='<div class="ac-row">';
-      html+='<div class="ac-dot" style="background:'+color+'"></div>';
-      html+='<div><div class="ac-flight">'+flight+typeTag+'</div>';
-      html+='<div class="ac-detail">'+ac.dist_km+'km away</div></div>';
-      html+='<div><div class="ac-alt">'+fmtAlt(ac.alt)+'</div>';
-      if(ac.gs) html+='<div class="ac-gs">'+Math.round(ac.gs)+' kt</div>';
-      html+='</div></div>';
+      html+='<div class="ac-flag">'+hexFlag(ac.hex)+'</div>';
+      html+='<div class="ac-flight">'+flight+'</div>';
+      html+='<div class="ac-route">'+(ac.r||'')+'</div>';
+      html+='<div class="ac-type">'+(ac.t||'')+'</div>';
+      html+='<div class="ac-sqk">'+(ac.squawk||'')+'</div>';
+      html+='<div class="ac-alt" style="color:'+altCol+'">'+fmtAlt(ac.alt)+'</div>';
+      html+='<div class="ac-gs">'+spd+'</div>';
+      html+='<div class="ac-dist">'+dist+'</div>';
+      html+='</div>';
     });
-    if(aircraft.length>15) html+='<div class="ac-more">+'+( aircraft.length-15)+' more within 150km</div>';
+    if(aircraft.length>30) html+='<div class="ac-more">+'+(aircraft.length-30)+' more within 150km</div>';
     el.innerHTML=html;
   }
   function refreshAircraft(){
@@ -1881,26 +1951,40 @@ class Handler(BaseHTTPRequestHandler):
         dg_count = db_stats['today_dg']
 
         # ── ADS-B panel ──────────────────────────────────────────────────────
-        radar_svg = generate_live_radar_svg()
-
-        ac_rows_html = ""
-        for ac in aircraft[:15]:
-            color = _alt_color(ac['alt'])
-            flight = ac['flight'] or ac['hex'] or '?'
-            alt    = ac['alt']
-            alt_str= (f"FL{alt//100:03d}" if alt >= 10000 else f"{alt:,} ft") if alt is not None else "—"
-            gs_str = f"{int(ac['gs'])} kt" if ac.get('gs') else ""
+        ac_rows_html = (
+            "<div class='ac-hdr'>"
+            "<span></span>"
+            "<span style='text-align:left'>CALLSIGN</span>"
+            "<span style='text-align:left'>ROUTE</span>"
+            "<span>TYPE</span><span>SQWK</span><span>ALT ft</span>"
+            "<span>SPD kt</span><span>DIST</span>"
+            "</div>"
+        )
+        for ac in aircraft[:30]:
+            color    = _alt_color(ac['alt'])
+            flight   = _he.escape(ac['flight'] or ac['hex'] or '?')
+            alt      = ac['alt']
+            alt_str  = (f"FL{alt//100:03d}" if alt >= 10000 else f"{alt:,}ft") if alt is not None else "—"
+            gs_str   = str(int(ac['gs'])) if ac.get('gs') else ""
+            sqk      = ac.get('squawk') or ''
+            route    = _he.escape(ac.get('r') or '')
+            type_str = _he.escape(ac.get('t') or '')
+            dist_nmi = ac.get('dist_nmi', '')
+            flag     = _icao_flag(ac.get('hex', ''))
             ac_rows_html += (
                 f"<div class='ac-row'>"
-                f"<div class='ac-dot' style='background:{color}'></div>"
-                f"<div><div class='ac-flight'>{flight}</div>"
-                f"<div class='ac-detail'>{ac['dist_km']} km away</div></div>"
-                f"<div><div class='ac-alt'>{alt_str}</div>"
-                f"<div class='ac-gs'>{gs_str}</div></div>"
+                f"<div class='ac-flag'>{flag}</div>"
+                f"<div class='ac-flight'>{flight}</div>"
+                f"<div class='ac-route'>{route}</div>"
+                f"<div class='ac-type'>{type_str}</div>"
+                f"<div class='ac-sqk'>{sqk}</div>"
+                f"<div class='ac-alt' style='color:{color}'>{alt_str}</div>"
+                f"<div class='ac-gs'>{gs_str}</div>"
+                f"<div class='ac-dist'>{dist_nmi}nm</div>"
                 f"</div>"
             )
-        if len(aircraft) > 15:
-            ac_rows_html += f"<div class='ac-more'>+{len(aircraft)-15} more within 150km</div>"
+        if len(aircraft) > 30:
+            ac_rows_html += f"<div class='ac-more'>+{len(aircraft)-30} more within 150km</div>"
         if not aircraft:
             ac_rows_html = "<div class='ac-more'>No aircraft data available</div>"
 
@@ -2085,7 +2169,7 @@ class Handler(BaseHTTPRequestHandler):
         <span id='liveLabel2'>{live_lbl}</span></div>
     </div>
     <div class='radar-wrap' id='radarWrap'>
-      {radar_svg}
+      <iframe src='https://1090.tangosierra.one/' id='tar1090Frame' frameborder='0'></iframe>
     </div>
     <div class='ac-list' id='acList'>
       {ac_rows_html}
