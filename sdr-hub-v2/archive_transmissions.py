@@ -32,7 +32,7 @@ except ImportError:
 # ── Configuration ─────────────────────────────────────────────────────────────
 PI_HOST     = "100.120.23.59"       # Tailscale IP
 PI_USER     = "root"
-PI_PASS     = "aXXGTMAL77TK"
+PI_PASS     = os.environ.get("SDR_PI_PASS")   # set env var, or leave unset for SSH key auth
 PI_DB_PATH  = "/opt/sdr-hub/data/db.sqlite3"
 PI_MEDIA    = "/opt/sdr-hub/data/public/media"
 
@@ -43,7 +43,10 @@ def connect_ssh():
     """Create SSH + SFTP connection to Pi."""
     client = paramiko.SSHClient()
     client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    client.connect(PI_HOST, username=PI_USER, password=PI_PASS, timeout=15)
+    kwargs = {"timeout": 15}
+    if PI_PASS:
+        kwargs["password"] = PI_PASS
+    client.connect(PI_HOST, username=PI_USER, **kwargs)
     sftp = client.open_sftp()
     return client, sftp
 

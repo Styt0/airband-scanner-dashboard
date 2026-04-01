@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Airband Transcript Viewer v3.0 — EBAW/EBBR — live SSE + ATC dashboard"""
-import array, datetime, html as _he, io, json, math, os, re, shutil, sqlite3, struct
+import array, datetime, html as _he, io, json, logging, math, os, re, shutil, sqlite3, struct
 import socketserver, time, wave
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs
@@ -130,7 +130,7 @@ KNOWN_FREQS = {
 }
 
 ATIS_FREQS     = {125.675, 120.575, 125.100, 124.870, 126.230}
-ATIS_MHZ       = {125.675, 120.575, 125.100, 124.870, 126.230}
+ATIS_MHZ       = ATIS_FREQS
 EBAW_LOCAL_MHZ = {119.900, 119.975, 120.575, 126.650, 135.200}
 EBBR_LOCAL_MHZ = {118.250, 118.475, 118.600, 119.300, 120.775, 121.150, 125.675, 126.625}
 
@@ -601,13 +601,15 @@ def get_adsb_stats():
             'msgs_1min':         l1.get('accepted', [0])[0] if l1.get('accepted') else 0,
             'max_range_km':      round(l5.get('max_distance', 0) / 1000, 0),
         }
-    except: pass
+    except Exception:
+        logging.warning("tar1090 stats fetch failed", exc_info=True)
     try:
         with _ureq.urlopen(STAGE2_URL, timeout=3) as r:
             s2 = json.loads(r.read())
         if isinstance(s2, list) and s2: s2 = s2[0]
         result['stage2'] = s2
-    except: pass
+    except Exception:
+        logging.warning("stage2 stats fetch failed", exc_info=True)
     return result
 
 def get_db_stats(conn):
@@ -651,29 +653,31 @@ def get_hourly_data():
         return [0] * 24
 
 def _icao_flag(hex_str):
-    """Return a flag emoji for a given ICAO 24-bit hex address."""
+    """Return a flagcdn.com <img> tag for a given ICAO 24-bit hex address."""
     try:
         n = int(hex_str, 16)
-        if 0x300000 <= n <= 0x33FFFF: return '🇮🇹'
-        if 0x340000 <= n <= 0x37FFFF: return '🇪🇸'
-        if 0x380000 <= n <= 0x3BFFFF: return '🇫🇷'
-        if 0x3C0000 <= n <= 0x3FFFFF: return '🇩🇪'
-        if 0x400000 <= n <= 0x43FFFF: return '🇬🇧'
-        if 0x440000 <= n <= 0x447FFF: return '🇦🇹'
-        if 0x448000 <= n <= 0x44FFFF: return '🇧🇪'
-        if 0x450000 <= n <= 0x457FFF: return '🇧🇬'
-        if 0x458000 <= n <= 0x45FFFF: return '🇩🇰'
-        if 0x460000 <= n <= 0x467FFF: return '🇫🇮'
-        if 0x468000 <= n <= 0x46FFFF: return '🇬🇷'
-        if 0x470000 <= n <= 0x477FFF: return '🇭🇺'
-        if 0x480000 <= n <= 0x487FFF: return '🇳🇱'
-        if 0x488000 <= n <= 0x48FFFF: return '🇨🇭'
-        if 0x490000 <= n <= 0x497FFF: return '🇨🇿'
-        if 0x498000 <= n <= 0x49FFFF: return '🇵🇱'
-        if 0x4A8000 <= n <= 0x4AFFFF: return '🇸🇪'
-        if 0x4B0000 <= n <= 0x4B7FFF: return '🇳🇴'
-        if 0x700000 <= n <= 0x73FFFF: return '🇦🇪'
-        if 0xA00000 <= n <= 0xAFFFFF: return '🇺🇸'
+        if   0x300000 <= n <= 0x33FFFF: cc = 'it'
+        elif 0x340000 <= n <= 0x37FFFF: cc = 'es'
+        elif 0x380000 <= n <= 0x3BFFFF: cc = 'fr'
+        elif 0x3C0000 <= n <= 0x3FFFFF: cc = 'de'
+        elif 0x400000 <= n <= 0x43FFFF: cc = 'gb'
+        elif 0x440000 <= n <= 0x447FFF: cc = 'at'
+        elif 0x448000 <= n <= 0x44FFFF: cc = 'be'
+        elif 0x450000 <= n <= 0x457FFF: cc = 'bg'
+        elif 0x458000 <= n <= 0x45FFFF: cc = 'dk'
+        elif 0x460000 <= n <= 0x467FFF: cc = 'fi'
+        elif 0x468000 <= n <= 0x46FFFF: cc = 'gr'
+        elif 0x470000 <= n <= 0x477FFF: cc = 'hu'
+        elif 0x480000 <= n <= 0x487FFF: cc = 'nl'
+        elif 0x488000 <= n <= 0x48FFFF: cc = 'ch'
+        elif 0x490000 <= n <= 0x497FFF: cc = 'cz'
+        elif 0x498000 <= n <= 0x49FFFF: cc = 'pl'
+        elif 0x4A8000 <= n <= 0x4AFFFF: cc = 'se'
+        elif 0x4B0000 <= n <= 0x4B7FFF: cc = 'no'
+        elif 0x700000 <= n <= 0x73FFFF: cc = 'ae'
+        elif 0xA00000 <= n <= 0xAFFFFF: cc = 'us'
+        else: return ''
+        return f"<img src='https://flagcdn.com/16x12/{cc}.png' alt='{cc.upper()}' width='16' height='12'>"
     except Exception:
         pass
     return ''
@@ -805,7 +809,8 @@ def generate_map_svg(tx_id, begin_date, end_date, label, freq_hz=0, text=None):
                 FROM positions WHERE ts BETWEEN ? AND ? GROUP BY hex ORDER BY dist_km ASC
             """,(t0,t1)).fetchall()
             conn.close(); aircraft=[dict(r) for r in rows]
-    except: pass
+    except Exception:
+        logging.warning("aircraft DB query failed", exc_info=True)
     best_hex,match_reason = guess_transmitter(text,aircraft,freq_hz)
     p=[]
     p.append(f'<svg xmlns="http://www.w3.org/2000/svg" width="{MAP_SIZE}" height="{MAP_SIZE}" style="background:#050508;border-radius:10px;display:block">')
@@ -886,8 +891,8 @@ def generate_live_radar_svg():
                 dist = math.sqrt(dx**2 + dy**2)
                 if dist > 22: continue
                 aircraft.append({**ac, '_x': cx + dx*ppk, '_y': cy + dy*ppk, '_dist': dist})
-        except:
-            pass
+        except Exception:
+            logging.warning("ADSB aircraft map fetch failed", exc_info=True)
 
     p = [f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" width="{W}" height="{H}" style="background:#05050a;display:block">']
 
@@ -1349,10 +1354,10 @@ audio{height:24px;margin-left:4px;vertical-align:middle}
   text-transform:uppercase}
 .panel-live{display:flex;align-items:center;gap:5px;font-size:9px;
   font-weight:700;color:var(--green);letter-spacing:.08em}
-.radar-wrap{flex-shrink:0;border-bottom:1px solid var(--border);
-  background:#05050a;overflow:hidden;height:360px}
+.radar-wrap{flex:1 1 50%;min-height:0;border-bottom:1px solid var(--border);
+  background:#05050a;overflow:hidden}
 .radar-wrap iframe{width:100%;height:100%;border:none;display:block}
-.ac-list{flex:1;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--border) transparent}
+.ac-list{flex:1 1 50%;min-height:0;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--border) transparent}
 .ac-list::-webkit-scrollbar{width:3px}
 .ac-list::-webkit-scrollbar-thumb{background:var(--border-hi);border-radius:3px}
 .ac-hdr,.ac-row{display:grid;
@@ -1365,7 +1370,7 @@ audio{height:24px;margin-left:4px;vertical-align:middle}
 .ac-row{transition:background .1s;cursor:default}
 .ac-row:hover{background:var(--bg-lift)}
 .ac-linked{background:#080f1a}.ac-linked:hover{background:#0e1828}
-.ac-flag{font-size:13px;line-height:1}
+.ac-flag{line-height:1;display:flex;align-items:center}
 .ac-flight{font-size:11px;font-weight:700;color:var(--text-hi);
   font-family:ui-monospace,monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .ac-route{font-size:9px;color:var(--text-mid);font-family:ui-monospace,monospace;
@@ -1559,27 +1564,28 @@ function toggleTheme(){
   }
   function hexFlag(hex){
     try{
-      var n=parseInt(hex,16);
-      if(n>=0x300000&&n<=0x33FFFF) return '\uD83C\uDDEE\uD83C\uDDF9'; // IT
-      if(n>=0x340000&&n<=0x37FFFF) return '\uD83C\uDDEA\uD83C\uDDF8'; // ES
-      if(n>=0x380000&&n<=0x3BFFFF) return '\uD83C\uDDEB\uD83C\uDDF7'; // FR
-      if(n>=0x3C0000&&n<=0x3FFFFF) return '\uD83C\uDDE9\uD83C\uDDEA'; // DE
-      if(n>=0x400000&&n<=0x43FFFF) return '\uD83C\uDDEC\uD83C\uDDE7'; // GB
-      if(n>=0x440000&&n<=0x447FFF) return '\uD83C\uDDE6\uD83C\uDDF9'; // AT
-      if(n>=0x448000&&n<=0x44FFFF) return '\uD83C\uDDE7\uD83C\uDDEA'; // BE
-      if(n>=0x450000&&n<=0x457FFF) return '\uD83C\uDDE7\uD83C\uDDEC'; // BG
-      if(n>=0x458000&&n<=0x45FFFF) return '\uD83C\uDDE9\uD83C\uDDF0'; // DK
-      if(n>=0x460000&&n<=0x467FFF) return '\uD83C\uDDEB\uD83C\uDDEE'; // FI
-      if(n>=0x468000&&n<=0x46FFFF) return '\uD83C\uDDEC\uD83C\uDDF7'; // GR
-      if(n>=0x470000&&n<=0x477FFF) return '\uD83C\uDDED\uD83C\uDDFA'; // HU
-      if(n>=0x480000&&n<=0x487FFF) return '\uD83C\uDDF3\uD83C\uDDF1'; // NL
-      if(n>=0x488000&&n<=0x48FFFF) return '\uD83C\uDDE8\uD83C\uDDED'; // CH
-      if(n>=0x490000&&n<=0x497FFF) return '\uD83C\uDDE8\uD83C\uDDFF'; // CZ
-      if(n>=0x498000&&n<=0x49FFFF) return '\uD83C\uDDF5\uD83C\uDDF1'; // PL
-      if(n>=0x4A8000&&n<=0x4AFFFF) return '\uD83C\uDDF8\uD83C\uDDEA'; // SE
-      if(n>=0x4B0000&&n<=0x4B7FFF) return '\uD83C\uDDF3\uD83C\uDDF4'; // NO
-      if(n>=0x700000&&n<=0x73FFFF) return '\uD83C\uDDE6\uD83C\uDDEA'; // AE
-      if(n>=0xA00000&&n<=0xAFFFFF) return '\uD83C\uDDFA\uD83C\uDDF8'; // US
+      var n=parseInt(hex,16),cc='';
+      if(n>=0x300000&&n<=0x33FFFF) cc='it';
+      else if(n>=0x340000&&n<=0x37FFFF) cc='es';
+      else if(n>=0x380000&&n<=0x3BFFFF) cc='fr';
+      else if(n>=0x3C0000&&n<=0x3FFFFF) cc='de';
+      else if(n>=0x400000&&n<=0x43FFFF) cc='gb';
+      else if(n>=0x440000&&n<=0x447FFF) cc='at';
+      else if(n>=0x448000&&n<=0x44FFFF) cc='be';
+      else if(n>=0x450000&&n<=0x457FFF) cc='bg';
+      else if(n>=0x458000&&n<=0x45FFFF) cc='dk';
+      else if(n>=0x460000&&n<=0x467FFF) cc='fi';
+      else if(n>=0x468000&&n<=0x46FFFF) cc='gr';
+      else if(n>=0x470000&&n<=0x477FFF) cc='hu';
+      else if(n>=0x480000&&n<=0x487FFF) cc='nl';
+      else if(n>=0x488000&&n<=0x48FFFF) cc='ch';
+      else if(n>=0x490000&&n<=0x497FFF) cc='cz';
+      else if(n>=0x498000&&n<=0x49FFFF) cc='pl';
+      else if(n>=0x4A8000&&n<=0x4AFFFF) cc='se';
+      else if(n>=0x4B0000&&n<=0x4B7FFF) cc='no';
+      else if(n>=0x700000&&n<=0x73FFFF) cc='ae';
+      else if(n>=0xA00000&&n<=0xAFFFFF) cc='us';
+      if(cc) return '<img src="https://flagcdn.com/16x12/'+cc+'.png" alt="'+cc.toUpperCase()+'" width="16" height="12">';
     }catch(e){}
     return '';
   }
@@ -1879,7 +1885,8 @@ class Handler(BaseHTTPRequestHandler):
             try:
                 where.append("abs((t.begin_frequency+t.end_frequency)/2.0-?)<20000")
                 params.append(float(freq_f)*1e6)
-            except: pass
+            except Exception:
+                logging.debug("invalid freq filter value: %r", freq_f)
         if speech_o: where.append("tr.text IS NOT NULL AND tr.text!=''")
         if hp:       where.append("tr.id IS NOT NULL")
         w_sql = " AND ".join(where)
