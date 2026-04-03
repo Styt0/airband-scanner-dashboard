@@ -3,7 +3,7 @@
 Real-time ATC transcript viewer for **EBAW (Antwerp)** and **EBBR (Brussels)**.
 An RTL-SDR dongle on a Raspberry Pi captures airband audio, transcribes it via Deepgram, and streams it live to a self-hosted web dashboard.
 
-![Dashboard Screenshot](docs/screenshot.png)
+![Dashboard Screenshot](screenshot.png)
 
 ---
 
