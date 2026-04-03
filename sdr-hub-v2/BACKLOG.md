@@ -7,6 +7,13 @@
 ## 🔴 Security
 - [x] `archive_transmissions.py` line 35: plaintext `PI_PASS` removed — now uses `os.environ.get("SDR_PI_PASS")`, falls back to SSH key auth
 
+## ✅ Infrastructure / reliability (done 2026-04-02)
+- [x] Daily Pi reboot — changed cron `*/2` → `*` (every day at 04:00)
+- [x] Watchdog script `/opt/deepgram-worker/sdr_watchdog.sh`
+  - Detects sdr_scanner crash loop (>5 exits in 5 min) → reboot
+  - Detects daytime transmission drought (3h, 07-22h) → reboot
+  - Runs every 15 min via root crontab
+
 ## 🟠 Reliability (silent failures)
 - [x] `transcript_viewer_new.py` — added `import logging`
 - [x] Line 604: tar1090 stats fetch → `logging.warning(..., exc_info=True)`
@@ -26,6 +33,8 @@
 
 ## 🟢 Minor / nice to have
 - [x] `ATIS_FREQS` and `ATIS_MHZ` deduplicated — `ATIS_MHZ = ATIS_FREQS`
+- [x] **Audio player**: replaced `<audio controls>` horizontal bar with circular SVG progress ring around play button — layout width no longer fluctuates; play/pause toggle with ▶/⏸
+- [x] **Freq column styling**: swapped — `tx-fname` (EBBR APP) now gets role colour (orange/yellow/cyan), `tx-badge` (APP/ACC) now neutral grey pill
 - [ ] `archive_transmissions.py`: no `--dry-run` flag
 - [ ] `portal.py`: footer says "SDR-HUB v3" but project is v2 — align versioning
 - [ ] `mockup_radar_v3.html` — still being iterated or can it be archived?

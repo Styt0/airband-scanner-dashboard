@@ -1082,9 +1082,8 @@ def build_card_html(r, fresh=False):
     freq_html = (
         f"<div class='tx-freq'>"
         f"<div class='tx-mhz'>{fc/1e6:.3f}</div>"
-        f"<span class='tx-badge' style='background:{badge_bg};color:{stripe_color};"
-        f"border:1px solid {stripe_color}40'>{type_short}</span>"
-        f"<div class='tx-fname'>{label}</div></div>")
+        f"<span class='tx-badge'>{type_short}</span>"
+        f"<div class='tx-fname' style='color:{stripe_color}'>{label}</div></div>")
     bars = dur_bar_html(r["begin_date"], r["end_date"])
     if tr_id is None:
         tx_html = "<div class='tx-speech empty'>Pending transcription\u2026</div>"
@@ -1110,8 +1109,13 @@ def build_card_html(r, fresh=False):
     fresh_cls = " fresh" if fresh else ""
     pending_attr = " data-pending='1'" if (tr_id is None or not text) else ""
     audio_html = (
+        f"<div class='ap-wrap' id='ap{rid}'>"
+        f"<svg class='ap-ring' viewBox='0 0 32 32'>"
+        f"<circle class='ap-ring-bg' cx='16' cy='16' r='13'/>"
+        f"<circle class='ap-ring-fg' cx='16' cy='16' r='13'/>"
+        f"</svg>"
         f"<button class='btn-play' onclick='loadAudio(this,{rid})'>&#9654;</button>"
-        f"<span id='ap{rid}'></span>"
+        f"</div>"
     ) if (tr_id is not None and err != "file_missing") else ""
     map_btn = f"<button class='btn-map' onclick='showMap({rid},\"{map_tj}\")'>radar</button>"
     return (
@@ -1299,9 +1303,10 @@ html,body{height:100%;overflow:hidden;font-family:ui-sans-serif,system-ui,-apple
   border-right:1px solid var(--border);min-width:0}
 .tx-mhz{font-size:14px;font-weight:800;font-family:ui-monospace,monospace;
   color:var(--text-hi);letter-spacing:-.01em;white-space:nowrap}
-.tx-badge{display:inline-block;font-size:8px;font-weight:800;letter-spacing:.1em;
-  padding:1px 5px;border-radius:3px;margin-top:3px;text-transform:uppercase}
-.tx-fname{font-size:9px;color:var(--text-lo);margin-top:1px;
+.tx-badge{display:inline-block;font-size:8px;font-weight:700;letter-spacing:.08em;
+  padding:1px 5px;border-radius:3px;margin-top:3px;text-transform:uppercase;
+  background:var(--bg-lift);color:var(--text-lo);border:1px solid var(--border)}
+.tx-fname{font-size:9px;color:var(--text-hi);font-weight:700;margin-top:2px;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 /* transcript hero */
 .tx-body{padding:11px 14px;display:flex;flex-direction:column;justify-content:center;gap:4px}
@@ -1324,12 +1329,18 @@ html,body{height:100%;overflow:hidden;font-family:ui-sans-serif,system-ui,-apple
 .tx-new{width:6px;height:6px;border-radius:50%;background:var(--green);
   animation:blink 2s infinite;flex-shrink:0;margin-bottom:2px}
 .btn-play{width:28px;height:28px;border-radius:50%;background:var(--bg-lift);
-  border:1px solid var(--border-hi);color:var(--text-hi);cursor:pointer;font-size:9px;
+  border:1px solid var(--border-hi);color:var(--text-hi);cursor:pointer;font-size:11px;
   display:inline-flex;align-items:center;justify-content:center;
   flex-shrink:0;transition:all .15s}
 .btn-play:hover{background:var(--yellow);border-color:var(--yellow);color:#000}
 .btn-play:disabled{opacity:.2;cursor:default}
-audio{height:24px;margin-left:4px;vertical-align:middle}
+.ap-wrap{position:relative;display:inline-flex;align-items:center;justify-content:center;
+  width:32px;height:32px;flex-shrink:0}
+.ap-ring{position:absolute;top:0;left:0;width:32px;height:32px;
+  transform:rotate(-90deg);pointer-events:none}
+.ap-ring-bg{fill:none;stroke:var(--border);stroke-width:2}
+.ap-ring-fg{fill:none;stroke:var(--cyan);stroke-width:2;stroke-linecap:round;
+  stroke-dasharray:81.68;stroke-dashoffset:81.68;transition:stroke-dashoffset .1s linear}
 .btn-map{background:none;border:1px solid var(--border-hi);color:var(--cyan);
   border-radius:6px;padding:3px 7px;cursor:pointer;font-size:9.5px;
   white-space:nowrap;transition:all .15s;font-family:inherit;font-weight:600}
@@ -1442,6 +1453,22 @@ audio{height:24px;margin-left:4px;vertical-align:middle}
   cursor:pointer;line-height:1}
 #mapClose:hover{color:var(--text-hi)}
 
+/* ── EMERGENCY OVERLAY ── */
+#emergOverlay{display:none;position:fixed;inset:0;z-index:300;
+  background:rgba(239,68,68,.12);backdrop-filter:blur(2px);
+  align-items:flex-start;justify-content:center;padding-top:72px;pointer-events:none}
+#emergOverlay.active{display:flex;animation:emerg-pulse 1.2s ease-in-out infinite alternate;pointer-events:all}
+@keyframes emerg-pulse{from{background:rgba(239,68,68,.08)}to{background:rgba(239,68,68,.22)}}
+#emergBox{background:#180808;border:2px solid #ef4444;border-radius:10px;
+  padding:20px 28px;min-width:320px;max-width:520px;text-align:center;
+  box-shadow:0 0 48px rgba(239,68,68,.55)}
+#emergIcon{font-size:1.8rem;margin-bottom:4px}
+#emergBadge{color:#ef4444;font-size:1rem;font-weight:900;letter-spacing:.12em;text-transform:uppercase}
+#emergDetail{color:#f0f0ff;font-size:.88rem;margin:8px 0 14px;line-height:1.4}
+#emergClose{background:#ef4444;color:#fff;border:none;border-radius:6px;
+  padding:7px 22px;font-weight:700;cursor:pointer;font-size:.82rem;letter-spacing:.05em}
+#emergClose:hover{background:#dc2626}
+
 /* ── RESPONSIVE ── */
 @media(max-width:960px){
   .app{grid-template-columns:1fr;grid-template-rows:auto auto auto}
@@ -1500,6 +1527,7 @@ function toggleTheme(){
       try{
         var d=JSON.parse(ev.data);
         _lastId=d.id;
+        if(d.emerg) triggerEmergAlert('EMERGENCY FREQ',d.emerg_detail||'121.5 / 243.0 MHz — GUARD');
         var feed=document.querySelector('.feed-scroll');
         if(!feed)return;
         var tmp=document.createElement('template');
@@ -1589,6 +1617,42 @@ function toggleTheme(){
     }catch(e){}
     return '';
   }
+  // ── Emergency alert ───────────────────────────────────────────────────────
+  var _emergTimer=null;
+  var _alertedSquawks={};
+  var EMERG_SQUAWKS={'7700':'GENERAL EMERGENCY','7600':'RADIO FAILURE (NORDO)','7500':'HIJACK / UNLAWFUL INTERFERENCE'};
+
+  function _esc(s){
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+  function triggerEmergAlert(badge,detail){
+    document.getElementById('emergBadge').textContent=badge;
+    document.getElementById('emergDetail').textContent=detail;
+    document.getElementById('emergOverlay').classList.add('active');
+    if(_emergTimer) clearTimeout(_emergTimer);
+    _emergTimer=setTimeout(dismissEmerg,90000);
+    if(window.Notification&&Notification.permission==='granted'){
+      new Notification('\u26A0 '+badge,{body:detail,tag:'emerg',requireInteraction:true});
+    }
+  }
+  window.dismissEmerg=function(){
+    document.getElementById('emergOverlay').classList.remove('active');
+    if(_emergTimer){clearTimeout(_emergTimer);_emergTimer=null;}
+  };
+  window.requestAlerts=function(){
+    if(!window.Notification) return;
+    Notification.requestPermission().then(function(p){
+      var btn=document.getElementById('alertBtn');
+      if(btn) btn.style.opacity=p==='granted'?'1':'.45';
+    });
+  };
+  (function(){
+    if(window.Notification&&Notification.permission==='granted'){
+      var btn=document.getElementById('alertBtn');
+      if(btn) btn.style.opacity='1';
+    }
+  })();
+
   function renderAcList(aircraft){
     var el = document.getElementById('acList');
     if(!el) return;
@@ -1604,15 +1668,23 @@ function toggleTheme(){
       +'</div>';
     aircraft.slice(0,30).forEach(function(ac){
       var altCol=altColor(ac.alt);
-      var flight=ac.flight||ac.hex||'?';
+      var flight=_esc(ac.flight||ac.hex||'?');
       var spd=ac.gs?Math.round(ac.gs):'';
       var dist=ac.dist_nmi?ac.dist_nmi+'nm':'';
+      var sqk=_esc(ac.squawk||'');
+      var sqkEmerg=EMERG_SQUAWKS[ac.squawk];
+      if(sqkEmerg&&!_alertedSquawks[ac.hex+ac.squawk]){
+        _alertedSquawks[ac.hex+ac.squawk]=true;
+        var label=ac.flight||ac.hex||'Unknown';
+        triggerEmergAlert('SQUAWK '+ac.squawk,label+' \u2014 '+sqkEmerg);
+      }
+      var sqkStyle=sqkEmerg?'color:#ef4444;font-weight:700':'';
       html+='<div class="ac-row">';
       html+='<div class="ac-flag">'+hexFlag(ac.hex)+'</div>';
       html+='<div class="ac-flight">'+flight+'</div>';
-      html+='<div class="ac-route">'+(ac.r||'')+'</div>';
-      html+='<div class="ac-type">'+(ac.t||'')+'</div>';
-      html+='<div class="ac-sqk">'+(ac.squawk||'')+'</div>';
+      html+='<div class="ac-route">'+_esc(ac.r||'')+'</div>';
+      html+='<div class="ac-type">'+_esc(ac.t||'')+'</div>';
+      html+='<div class="ac-sqk" style="'+sqkStyle+'">'+sqk+'</div>';
       html+='<div class="ac-alt" style="color:'+altCol+'">'+fmtAlt(ac.alt)+'</div>';
       html+='<div class="ac-gs">'+spd+'</div>';
       html+='<div class="ac-dist">'+dist+'</div>';
@@ -1653,11 +1725,28 @@ function toggleTheme(){
 
   // ── Audio ─────────────────────────────────────────────────────────────────
   window.loadAudio=function(btn,txId){
-    btn.disabled=true;
     var wrap=document.getElementById('ap'+txId);
-    var a=document.createElement('audio');
-    a.controls=true; a.src='/audio/'+txId;
-    wrap.appendChild(a); a.play().catch(function(){});
+    var a=wrap._audio;
+    if(!a){
+      a=new Audio('/audio/'+txId);
+      wrap._audio=a;
+      var fg=wrap.querySelector('.ap-ring-fg');
+      var circ=81.68;
+      a.addEventListener('timeupdate',function(){
+        if(a.duration)fg.style.strokeDashoffset=circ*(1-a.currentTime/a.duration);
+      });
+      a.addEventListener('ended',function(){
+        btn.textContent='\u25B6';
+        fg.style.strokeDashoffset=circ;
+      });
+    }
+    if(a.paused){
+      a.play().catch(function(){});
+      btn.textContent='\u23F8';
+    }else{
+      a.pause();
+      btn.textContent='\u25B6';
+    }
   };
 
   // ── Radar map modal ───────────────────────────────────────────────────────
@@ -1816,7 +1905,13 @@ class Handler(BaseHTTPRequestHandler):
                     conn.close()
                     for r in rows:
                         card = build_card_html(dict(r), fresh=True)
-                        data = json.dumps({"id": r["id"], "html": card})
+                        fc = (r["begin_frequency"] + r["end_frequency"]) / 2
+                        is_emerg = abs(fc - 121.5e6) < 15000 or abs(fc - 243.0e6) < 15000
+                        payload = {"id": r["id"], "html": card}
+                        if is_emerg:
+                            payload["emerg"] = True
+                            payload["emerg_detail"] = f"{fc/1e6:.3f} MHz — GUARD / EMERGENCY FREQ"
+                        data = json.dumps(payload)
                         self.wfile.write(f"data: {data}\n\n".encode())
                         self.wfile.flush()
                         last_id = r["id"]
@@ -2090,6 +2185,7 @@ class Handler(BaseHTTPRequestHandler):
     <span class='clk-date' id='clkDate'>-- --- ----</span>
   </div>
   <div class='tb-right'>
+    <button class='btn-tb' id='alertBtn' onclick='requestAlerts()' title='Enable emergency notifications' style='opacity:.45'>&#128276;</button>
     <button class='btn-tb' id='themeBtn' onclick='toggleTheme()' title='Toggle dark / light'>◐</button>
     <a class='wx-notam-link' href='https://notams.aim.faa.gov/notamSearch/' target='_blank' rel='noopener' title='Open NOTAM search'>
       <span class='wx-label'>NOTAM</span>
@@ -2212,6 +2308,15 @@ class Handler(BaseHTTPRequestHandler):
   </div>
 
 </div><!-- /app -->
+
+<div id='emergOverlay' onclick='dismissEmerg()'>
+  <div id='emergBox' onclick='event.stopPropagation()'>
+    <div id='emergIcon'>&#9888;</div>
+    <div id='emergBadge'>EMERGENCY</div>
+    <div id='emergDetail'></div>
+    <button id='emergClose' onclick='dismissEmerg()'>ACKNOWLEDGE</button>
+  </div>
+</div>
 
 <div id='mapModal' onclick='this.classList.remove("open")'>
   <div id='mapBox' onclick='event.stopPropagation()'>

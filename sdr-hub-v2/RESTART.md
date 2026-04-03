@@ -1,19 +1,20 @@
 # RESTART.md — Session State
 
-## Last session: 2026-04-01
+## Last session: 2026-04-02
 
 ### What we did
-1. Opened the project, read README.txt and all source files
-2. Searched for TODO/FIXME comments — none found
-3. Did a deep code scan of `transcript_viewer_new.py` for stubs, dead code, and silent failures
-4. Found 8 bare `except: pass` blocks, hardcoded IPs, and one security issue
+1. **Audio player**: replaced `<audio controls>` bar with SVG circular progress ring around the button
+   - 32×32 wrap, r=13 cyan ring, `stroke-dashoffset` driven by `timeupdate`
+   - Play/pause toggle ▶/⏸, no layout shift
+2. **Freq column styling**: swapped visibility — label (EBBR APP) now bright + role colour, badge (APP/ACC) now neutral grey pill
+3. **`/sync-session-docs` skill**: created at `~/.claude/skills/sync-session-docs/` — global, reusable across projects
+4. Deployed `transcript_viewer_new.py` → `pi-adsb` twice (once per change), both active
+
+### Current Pi state
+- `sdr-hub` container: running
+- `transcript-viewer.service`: running on port 8002
+- All crons active: disk_rotation (03:00), reboot (04:00), watchdog (*/15)
 
 ### Where we stopped
-We were about to fix the **silent exception handlers** in `transcript_viewer_new.py`.
-The user asked to create these 4 project files first before doing any code work.
-
-### Ready to continue
-The next action is fixing the `except: pass` blocks — add `logging` calls so failures
-are visible without crashing. See BACKLOG.md for the full list and line numbers.
-
-No code has been changed yet. Pi deployment is untouched.
+UI polish done. Code backlog items still pending — see BACKLOG.md.
+Next: hardcoded config values (BACKLOG 🟡) or `portal.py` footer fix (🟢).
