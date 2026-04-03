@@ -35,6 +35,8 @@
 - [x] `ATIS_FREQS` and `ATIS_MHZ` deduplicated — `ATIS_MHZ = ATIS_FREQS`
 - [x] **Audio player**: replaced `<audio controls>` horizontal bar with circular SVG progress ring around play button — layout width no longer fluctuates; play/pause toggle with ▶/⏸
 - [x] **Freq column styling**: swapped — `tx-fname` (EBBR APP) now gets role colour (orange/yellow/cyan), `tx-badge` (APP/ACC) now neutral grey pill
+- [x] **Emergency alert overlay**: 121.5/243.0 MHz SSE flag + squawk 7700/7600/7500 detection, pulsing red overlay, browser notifications, bell button in topbar
+- [x] **README.md**: created with full feature list, stack, architecture, deployment, screenshot
 - [ ] `archive_transmissions.py`: no `--dry-run` flag
 - [ ] `portal.py`: footer says "SDR-HUB v3" but project is v2 — align versioning
 - [ ] `mockup_radar_v3.html` — still being iterated or can it be archived?
